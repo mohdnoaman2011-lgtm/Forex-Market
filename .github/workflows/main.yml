@@ -3,7 +3,7 @@ name: Build APK
 on:
   push:
     branches: [main]
-  workflow_dispatch:   # يتيح تشغيله يدويًا من تبويب Actions
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,6 +20,16 @@ jobs:
         with:
           channel: stable
           cache: true
+
+      - name: Create Android project files
+        run: |
+          flutter create --platforms=android --project-name currency_app --org com.example .
+          rm -rf test
+
+      - name: Add INTERNET permission
+        run: |
+          grep -q 'android.permission.INTERNET' android/app/src/main/AndroidManifest.xml || \
+          sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' android/app/src/main/AndroidManifest.xml
 
       - run: flutter pub get
 
