@@ -26,12 +26,17 @@ jobs:
           flutter create --platforms=android --project-name currency_app --org com.example .
           rm -rf test analysis_options.yaml
 
-      - name: Add INTERNET permission
+      - name: Add INTERNET permission and app name
         run: |
-          grep -q 'android.permission.INTERNET' android/app/src/main/AndroidManifest.xml || \
-          sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' android/app/src/main/AndroidManifest.xml
+          M=android/app/src/main/AndroidManifest.xml
+          grep -q 'android.permission.INTERNET' $M || \
+          sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' $M
+          sed -i 's#android:label="[^"]*"#android:label="Forex-Market"#' $M
 
       - run: flutter pub get
+
+      - name: Generate launcher icons
+        run: dart run flutter_launcher_icons
 
       - run: flutter analyze --no-fatal-infos
 
