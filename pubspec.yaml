@@ -1,5 +1,5 @@
 name: currency_app
-description: تطبيق أسعار العملات (مصدر البيانات: status.sd)
+description: تطبيق أسعار العملات (مصدر البيانات status.sd)
 publish_to: none
 version: 1.0.0
 
