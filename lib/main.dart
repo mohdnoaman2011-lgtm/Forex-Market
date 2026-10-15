@@ -4,6 +4,7 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'splash_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -152,7 +153,7 @@ class _RatesAppState extends State<RatesApp> {
       themeMode: _mode,
       builder: (c, child) =>
           Directionality(textDirection: TextDirection.rtl, child: child!),
-      home: HomePage(onToggleTheme: _toggle),
+      home: SplashPage(next: HomePage(onToggleTheme: _toggle)),
     );
   }
 }
