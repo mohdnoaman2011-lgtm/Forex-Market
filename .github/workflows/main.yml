@@ -23,7 +23,7 @@ jobs:
 
       - name: Create Android project files
         run: |
-          flutter create --platforms=android --project-name currency_app --org com.example .
+          flutter create --platforms=android --project-name currency_app --org com.forexmarket .
           rm -rf test analysis_options.yaml
 
       - name: Add INTERNET permission and app name
@@ -31,7 +31,7 @@ jobs:
           M=android/app/src/main/AndroidManifest.xml
           grep -q 'android.permission.INTERNET' $M || \
           sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' $M
-          sed -i 's#android:label="[^"]*"#android:label="Forex-Market"#' $M
+          sed -i 's#android:label="[^"]*"#android:label="Forex-Market 2"#' $M
 
       - run: flutter pub get
 
