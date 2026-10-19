@@ -84,20 +84,62 @@ String fmt(double v, [int d = 2]) {
 // ───────────────────────── الألوان والثيم ─────────────────────────
 
 class Palette {
-  final Color bg, card, line, chip, text, muted, accent, onAccent;
-  const Palette(this.bg, this.card, this.line, this.chip, this.text, this.muted,
-      this.accent, this.onAccent);
+  final Color bg, card, line, chip, text, muted, mint, mintText, cream, amber,
+      accent, onAccent;
+  const Palette({
+    required this.bg,
+    required this.card,
+    required this.line,
+    required this.chip,
+    required this.text,
+    required this.muted,
+    required this.mint,
+    required this.mintText,
+    required this.cream,
+    required this.amber,
+    required this.accent,
+    required this.onAccent,
+  });
 
-  static const dark = Palette(Color(0xFF0A1411), Color(0xFF12201A),
-      Color(0xFF22362D), Color(0xFF192A23), Color(0xFFEAF3EE),
-      Color(0xFF8FA79B), Color(0xFF4ADE9A), Color(0xFF05150E));
-  static const light = Palette(Color(0xFFF6F7F4), Color(0xFFFFFFFF),
-      Color(0xFFE3E6E0), Color(0xFFE4EEE9), Color(0xFF14201B),
-      Color(0xFF5B6660), Color(0xFF0F7A5A), Color(0xFFFFFFFF));
+  static const dark = Palette(
+    bg: Color(0xFF0A101C),
+    card: Color(0xFF121B2B),
+    line: Color(0xFF223148),
+    chip: Color(0xFF223148),
+    text: Color(0xFFE8EEF8),
+    muted: Color(0xFF8E9DB8),
+    mint: Color(0xFF182A4A),
+    mintText: Color(0xFF7AA5FF),
+    cream: Color(0xFF2B2514),
+    amber: Color(0xFFF2B544),
+    accent: Color(0xFF7AA5FF),
+    onAccent: Color(0xFF06122B),
+  );
+
+  static const light = Palette(
+    bg: Color(0xFFF4F6FA),
+    card: Color(0xFFFFFFFF),
+    line: Color(0xFFE1E6EF),
+    chip: Color(0xFFDFE6F2),
+    text: Color(0xFF121C2E),
+    muted: Color(0xFF56627A),
+    mint: Color(0xFFE8EFFC),
+    mintText: Color(0xFF1D4ED8),
+    cream: Color(0xFFFDF4E6),
+    amber: Color(0xFF9A5B00),
+    accent: Color(0xFF1D4ED8),
+    onAccent: Color(0xFFFFFFFF),
+  );
 
   static Palette of(BuildContext c) =>
       Theme.of(c).brightness == Brightness.dark ? dark : light;
 }
+
+const heroGradient = LinearGradient(
+  begin: Alignment.topRight,
+  end: Alignment.bottomLeft,
+  colors: [Color(0xFF2563EB), Color(0xFF1E3A8A)],
+);
 
 ThemeData buildTheme(Brightness b) {
   final p = b == Brightness.dark ? Palette.dark : Palette.light;
@@ -110,6 +152,7 @@ ThemeData buildTheme(Brightness b) {
       primary: p.accent,
       onPrimary: p.onAccent,
       surface: p.bg,
+      onSurface: p.text,
       primaryContainer: p.chip,
       onPrimaryContainer: p.text,
       onSurfaceVariant: p.muted,
@@ -177,11 +220,17 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final p = Palette.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cs = Theme.of(context).colorScheme;
-    final themeButton = IconButton.filledTonal(
+    final themeButton = IconButton(
       tooltip: 'تبديل الوضع الداكن والفاتح',
       onPressed: () => widget.onToggleTheme(isDark),
+      style: IconButton.styleFrom(
+        backgroundColor: p.card,
+        foregroundColor: p.text,
+        minimumSize: const Size(44, 44),
+        side: BorderSide(color: p.line),
+      ),
       icon: Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
     );
 
@@ -207,10 +256,8 @@ class _HomePageState extends State<HomePage> {
             return _tab == 0
                 ? RatesPage(
                     data: data,
-                    type: _type,
                     action: themeButton,
-                    onType: (t) => setState(() => _type = t),
-                    // الضغط على عملة ينقلك للمحوّل ومعها تلك العملة
+                    // الضغط على بطاقة عملة ينقلك للمحوّل ومعها تلك العملة
                     onPick: (c) => setState(() {
                       _from = c;
                       _to = 'SDG';
@@ -228,6 +275,10 @@ class _HomePageState extends State<HomePage> {
                     from: _from,
                     to: _to,
                     amount: _amount,
+                    onToggleType: () => setState(() => _type =
+                        _type == RateType.parallel
+                            ? RateType.bank
+                            : RateType.parallel),
                     onFrom: (v) => setState(() => _from = v),
                     onTo: (v) => setState(() => _to = v),
                     onSwap: () => setState(() {
@@ -247,9 +298,9 @@ class _HomePageState extends State<HomePage> {
             height: 64,
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
+              color: p.card,
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: cs.outlineVariant),
+              border: Border.all(color: p.line),
             ),
             child: Row(children: [
               for (final e in const [(0, 'الأسعار'), (1, 'المحوّل')])
@@ -258,9 +309,8 @@ class _HomePageState extends State<HomePage> {
                     onPressed: () => setState(() => _tab = e.$1),
                     style: TextButton.styleFrom(
                       backgroundColor:
-                          _tab == e.$1 ? cs.primary : Colors.transparent,
-                      foregroundColor:
-                          _tab == e.$1 ? cs.onPrimary : cs.onSurfaceVariant,
+                          _tab == e.$1 ? p.accent : Colors.transparent,
+                      foregroundColor: _tab == e.$1 ? p.onAccent : p.muted,
                       shape: const StadiumBorder(),
                       textStyle: TextStyle(
                           fontWeight:
@@ -279,26 +329,39 @@ class _HomePageState extends State<HomePage> {
 
 // ───────────────────────── عناصر مشتركة ─────────────────────────
 
-BoxDecoration cardDecoration(BuildContext context, {double radius = 24}) {
-  final cs = Theme.of(context).colorScheme;
-  return BoxDecoration(
-    color: Theme.of(context).cardColor,
-    borderRadius: BorderRadius.circular(radius),
-    border: Border.all(color: cs.outlineVariant),
-  );
+Widget screenHeader(BuildContext context, String title, Widget sub, Widget action) {
+  return Row(children: [
+    Expanded(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(title, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
+        sub,
+      ]),
+    ),
+    action,
+  ]);
 }
 
-Widget infoChip(BuildContext context, String text, {Color? color}) {
-  final cs = Theme.of(context).colorScheme;
+Widget rateTile(BuildContext context,
+    {required String label,
+    required String value,
+    required IconData icon,
+    required Color bg,
+    required Color fg}) {
   return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-    decoration: BoxDecoration(
-      color: cs.primaryContainer,
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Text(text,
-        textDirection: TextDirection.ltr,
-        style: TextStyle(fontSize: 12, color: color ?? cs.onPrimaryContainer)),
+    width: 82,
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+    decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [
+        Icon(icon, size: 12, color: fg),
+        const SizedBox(width: 4),
+        Text(label, style: TextStyle(fontSize: 11, color: fg)),
+      ]),
+      const SizedBox(height: 2),
+      Text(value,
+          textDirection: TextDirection.ltr,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+    ]),
   );
 }
 
@@ -306,151 +369,158 @@ Widget infoChip(BuildContext context, String text, {Color? color}) {
 
 class RatesPage extends StatelessWidget {
   final RatesData data;
-  final RateType type;
   final Widget action;
-  final ValueChanged<RateType> onType;
   final ValueChanged<String> onPick;
   final Future<void> Function() onRefresh;
   const RatesPage({
     super.key,
     required this.data,
-    required this.type,
     required this.action,
-    required this.onType,
     required this.onPick,
     required this.onRefresh,
   });
 
+  static const _flags = {
+    'USD': '🇺🇸',
+    'EUR': '🇪🇺',
+    'AED': '🇦🇪',
+    'SAR': '🇸🇦',
+    'QAR': '🇶🇦',
+    'EGP': '🇪🇬',
+  };
+  static const _order = ['AED', 'EGP', 'EUR', 'SAR', 'QAR'];
+
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final par = type == RateType.parallel;
-    final other = par ? RateType.bank : RateType.parallel;
-    final otherLabel = par ? 'بنك' : 'موازي';
+    final p = Palette.of(context);
     final usd = data.rates.firstWhere((r) => r.code == 'USD',
         orElse: () => data.rates.first);
-    final spread =
-        usd.bank == 0 ? null : (usd.parallel / usd.bank - 1) * 100;
+    final list = [
+      for (final c in _order) ...data.rates.where((r) => r.code == c),
+    ];
+    final subText = data.updatedAgo != null
+        ? 'آخر تحديث منذ ' + data.updatedAgo!
+        : 'مقابل الجنيه السوداني';
 
     return RefreshIndicator(
       onRefresh: onRefresh,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
         children: [
-          Row(children: [
-            const Expanded(
-              child: Text('الأسعار',
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
-            ),
-            if (data.updatedAgo != null)
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: cardDecoration(context, radius: 20),
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                          color: cs.primary, shape: BoxShape.circle)),
-                  const SizedBox(width: 8),
-                  Text('منذ ' + (data.updatedAgo ?? ''),
-                      style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant)),
-                ]),
-              ),
-            const SizedBox(width: 8),
+          screenHeader(
+            context,
+            'أسعار العملات',
+            Text(subText, style: TextStyle(fontSize: 13, color: p.muted)),
             action,
-          ]),
-          const SizedBox(height: 16),
-          SegmentedButton<RateType>(
-            segments: const [
-              ButtonSegment(value: RateType.parallel, label: Text('موازي')),
-              ButtonSegment(value: RateType.bank, label: Text('بنك')),
-            ],
-            selected: {type},
-            onSelectionChanged: (s) => onType(s.first),
           ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: cardDecoration(context),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(usd.name + ' · ' + (par ? 'موازي' : 'بنك'),
-                  style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant)),
-              const SizedBox(height: 6),
-              Text.rich(
-                TextSpan(children: [
-                  TextSpan(
-                      text: fmt(usd.of(type)),
-                      style: const TextStyle(
-                          fontSize: 40, fontWeight: FontWeight.w700)),
-                  TextSpan(
-                      text: ' SDG',
-                      style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant)),
-                ]),
-                textDirection: TextDirection.ltr,
-              ),
-              const SizedBox(height: 12),
-              Wrap(spacing: 8, children: [
-                infoChip(context,
-                    otherLabel + ' ' + fmt(usd.of(other))),
-                if (spread != null)
-                  infoChip(context, 'الفرق +' + spread.toStringAsFixed(1) + '%',
-                      color: cs.primary),
-              ]),
-            ]),
-          ),
-          const SizedBox(height: 8),
-          for (final r in data.rates)
+          const SizedBox(height: 14),
+          Row(children: [
             Container(
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: cs.outlineVariant)),
-              ),
-              child: ListTile(
-                onTap: () => onPick(r.code),
-                contentPadding: EdgeInsets.zero,
-                leading: Container(
-                  width: 44,
-                  height: 44,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: cs.primaryContainer,
-                    borderRadius: BorderRadius.circular(14),
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(color: p.accent, shape: BoxShape.circle)),
+            const SizedBox(width: 8),
+            const Text('أسعار اليوم',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+            const SizedBox(width: 8),
+            Expanded(child: Container(height: 1, color: p.line)),
+          ]),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              gradient: heroGradient,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: DefaultTextStyle(
+              style: const TextStyle(color: Colors.white),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(usd.name + ' – السوق الموازي',
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  Text.rich(
+                    TextSpan(children: [
+                      TextSpan(
+                          text: fmt(usd.parallel),
+                          style: const TextStyle(
+                              fontSize: 40, fontWeight: FontWeight.w700, height: 1.1)),
+                      const TextSpan(text: ' ج.س', style: TextStyle(fontSize: 13)),
+                    ]),
+                    textDirection: TextDirection.ltr,
                   ),
-                  child: Text(r.code,
-                      style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: cs.primary)),
-                ),
-                title: Text(r.name,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 15)),
-                subtitle: Text(r.code,
-                    style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant)),
-                trailing: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text.rich(
-                      TextSpan(children: [
-                        TextSpan(
-                            text: fmt(r.of(type)),
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w700, fontSize: 18)),
-                        TextSpan(
-                            text: ' SDG',
-                            style: TextStyle(
-                                fontSize: 11, color: cs.onSurfaceVariant)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0x2EFFFFFF),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      const Row(children: [
+                        Icon(Icons.account_balance_outlined, size: 12, color: Colors.white),
+                        SizedBox(width: 6),
+                        Text('بنك', style: TextStyle(fontSize: 12)),
                       ]),
-                      textDirection: TextDirection.ltr,
-                    ),
-                    Text(
-                      otherLabel + ' ' + fmt(r.of(other)),
-                      textDirection: TextDirection.ltr,
-                      style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
-                    ),
-                  ],
+                      Text(fmt(usd.bank),
+                          textDirection: TextDirection.ltr,
+                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                    ]),
+                  ),
+                ]),
+              ]),
+            ),
+          ),
+          const SizedBox(height: 14),
+          for (final r in list)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Material(
+                color: p.card,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  side: BorderSide(color: p.line),
+                ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(24),
+                  onTap: () => onPick(r.code),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                            color: p.mint, borderRadius: BorderRadius.circular(12)),
+                        child: Text(_flags[r.code] ?? '', style: const TextStyle(fontSize: 22)),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text(r.name,
+                              style: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w700, height: 1.25)),
+                          Text(r.code,
+                              textDirection: TextDirection.ltr,
+                              style: TextStyle(
+                                  fontSize: 11, fontWeight: FontWeight.w700, color: p.muted)),
+                        ]),
+                      ),
+                      rateTile(context,
+                          label: 'موازي',
+                          value: fmt(r.parallel),
+                          icon: Icons.storefront_outlined,
+                          bg: p.cream,
+                          fg: p.amber),
+                      const SizedBox(width: 6),
+                      rateTile(context,
+                          label: 'بنك',
+                          value: fmt(r.bank),
+                          icon: Icons.account_balance_outlined,
+                          bg: p.mint,
+                          fg: p.mintText),
+                    ]),
+                  ),
                 ),
               ),
             ),
@@ -464,7 +534,7 @@ class RatesPage extends StatelessWidget {
 
 String applyKey(String a, String k) {
   if (k == '⌫') return a.isEmpty ? a : a.substring(0, a.length - 1);
-  if (k == '.') return a.contains('.') ? a : '${a.isEmpty ? '0' : a}.';
+  if (k == '.') return a.contains('.') ? a : (a.isEmpty ? '0' : a) + '.';
   if (a.length >= 12) return a;
   return (a == '0' ? '' : a) + k;
 }
@@ -474,8 +544,8 @@ class ConverterPage extends StatelessWidget {
   final RateType type;
   final Widget action;
   final String from, to, amount;
+  final VoidCallback onToggleType, onSwap;
   final ValueChanged<String> onFrom, onTo, onAmount;
-  final VoidCallback onSwap;
   const ConverterPage({
     super.key,
     required this.rates,
@@ -484,10 +554,11 @@ class ConverterPage extends StatelessWidget {
     required this.from,
     required this.to,
     required this.amount,
+    required this.onToggleType,
     required this.onFrom,
     required this.onTo,
-    required this.onAmount,
     required this.onSwap,
+    required this.onAmount,
   });
 
   double _rate(String c) =>
@@ -498,45 +569,36 @@ class ConverterPage extends StatelessWidget {
         for (final r in rates) r.code: r.name,
       };
 
-  Widget _picker(BuildContext context, String value, ValueChanged<String> cb) {
-    final cs = Theme.of(context).colorScheme;
+  Widget _picker(BuildContext context, String value, ValueChanged<String> cb,
+      {required Color bg, required Color fg}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: cs.primaryContainer,
-        borderRadius: BorderRadius.circular(14),
-      ),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
       child: DropdownButton<String>(
         value: value,
         underline: const SizedBox.shrink(),
+        iconEnabledColor: fg,
+        selectedItemBuilder: (c) => [
+          for (final e in _names.entries)
+            Align(
+              alignment: Alignment.center,
+              child: Text(e.key,
+                  textDirection: TextDirection.ltr,
+                  style: TextStyle(color: fg, fontWeight: FontWeight.w600)),
+            ),
+        ],
         items: [
           for (final e in _names.entries)
-            DropdownMenuItem(value: e.key, child: Text('${e.value} (${e.key})')),
+            DropdownMenuItem(value: e.key, child: Text(e.value + ' (' + e.key + ')')),
         ],
         onChanged: (v) => cb(v!),
       ),
     );
   }
 
-  Widget _card(BuildContext context, String label, Widget picker, Widget value) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-      decoration: cardDecoration(context),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text(label, style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant)),
-          picker,
-        ]),
-        value,
-      ]),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final p = Palette.of(context);
     final amt = double.tryParse(amount) ?? 0;
     final unit = _rate(from) / _rate(to);
     final typeLabel = type == RateType.parallel ? 'سعر موازي' : 'سعر بنك';
@@ -544,32 +606,44 @@ class ConverterPage extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       children: [
-        Row(children: [
-          const Expanded(
-            child: Text('المحوّل',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: cardDecoration(context, radius: 20),
-            child: Text(typeLabel,
-                style: TextStyle(fontSize: 12, color: cs.primary)),
-          ),
-          const SizedBox(width: 8),
-          action,
-        ]),
-        const SizedBox(height: 16),
-        _card(
+        screenHeader(
           context,
-          'من',
-          _picker(context, from, onFrom),
-          Container(
-            alignment: Alignment.centerLeft,
-            constraints: const BoxConstraints(minHeight: 62),
-            child: Text(amount.isEmpty ? '0' : amount,
-                textDirection: TextDirection.ltr,
-                style: const TextStyle(fontSize: 42, fontWeight: FontWeight.w700)),
+          'المحوّل',
+          TextButton(
+            onPressed: onToggleType,
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(0, 44),
+              alignment: Alignment.centerRight,
+            ),
+            child: Text(typeLabel + ' · اضغط للتبديل',
+                style: TextStyle(
+                    fontSize: 13, fontWeight: FontWeight.w600, color: p.mintText)),
           ),
+          action,
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            color: p.card,
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: p.line),
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text('من', style: TextStyle(fontSize: 13, color: p.muted)),
+              _picker(context, from, onFrom, bg: p.chip, fg: p.text),
+            ]),
+            Container(
+              alignment: Alignment.centerLeft,
+              constraints: const BoxConstraints(minHeight: 62),
+              child: Text(amount.isEmpty ? '0' : amount,
+                  textDirection: TextDirection.ltr,
+                  style: const TextStyle(fontSize: 44, fontWeight: FontWeight.w700)),
+            ),
+          ]),
         ),
         Center(
           child: IconButton.filled(
@@ -578,24 +652,34 @@ class ConverterPage extends StatelessWidget {
             icon: const Icon(Icons.swap_vert),
           ),
         ),
-        _card(
-          context,
-          'إلى',
-          _picker(context, to, onTo),
-          Container(
-            alignment: Alignment.centerLeft,
-            constraints: const BoxConstraints(minHeight: 62),
-            child: Text(fmt(amt * unit),
-                textDirection: TextDirection.ltr,
-                style: TextStyle(
-                    fontSize: 42, fontWeight: FontWeight.w700, color: cs.primary)),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            gradient: heroGradient,
+            borderRadius: BorderRadius.circular(28),
           ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              const Text('إلى', style: TextStyle(fontSize: 13, color: Colors.white)),
+              _picker(context, to, onTo,
+                  bg: const Color(0x33FFFFFF), fg: Colors.white),
+            ]),
+            Container(
+              alignment: Alignment.centerLeft,
+              constraints: const BoxConstraints(minHeight: 62),
+              child: Text(fmt(amt * unit),
+                  textDirection: TextDirection.ltr,
+                  style: const TextStyle(
+                      fontSize: 44, fontWeight: FontWeight.w700, color: Colors.white)),
+            ),
+          ]),
         ),
         const SizedBox(height: 12),
         Center(
           child: Text('1 $from = ${fmt(unit, 4)} $to',
               textDirection: TextDirection.ltr,
-              style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
+              style: TextStyle(color: p.muted, fontSize: 12)),
         ),
         const SizedBox(height: 12),
         Directionality(
@@ -612,12 +696,13 @@ class ConverterPage extends StatelessWidget {
                 TextButton(
                   onPressed: () => onAmount(applyKey(amount, k)),
                   style: TextButton.styleFrom(
-                    backgroundColor: Theme.of(context).cardColor,
-                    foregroundColor: cs.onSurface,
+                    backgroundColor: p.card,
+                    foregroundColor: p.text,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
-                    textStyle: const TextStyle(
-                        fontSize: 22, fontWeight: FontWeight.w500),
+                      borderRadius: BorderRadius.circular(18),
+                      side: BorderSide(color: p.line),
+                    ),
+                    textStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
                   ),
                   child: Text(k),
                 ),
