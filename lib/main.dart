@@ -23,7 +23,13 @@ Future<void> main() async {
       );
   try {
     WidgetsFlutterBinding.ensureInitialized();
-    final prefs = await SharedPreferences.getInstance();
+    // إذا فشل التخزين المحلي يعمل التطبيق بدون حفظ الوضع بدل أن يتوقف
+    SharedPreferences? prefs;
+    try {
+      prefs = await SharedPreferences.getInstance();
+    } catch (_) {
+      prefs = null;
+    }
     runApp(RatesApp(prefs: prefs));
   } catch (e, st) {
     runApp(
@@ -202,7 +208,7 @@ ThemeData buildTheme(Brightness b) {
 // ───────────────────────── التطبيق ─────────────────────────
 
 class RatesApp extends StatefulWidget {
-  final SharedPreferences prefs;
+  final SharedPreferences? prefs;
   const RatesApp({super.key, required this.prefs});
   @override
   State<RatesApp> createState() => _RatesAppState();
@@ -210,7 +216,7 @@ class RatesApp extends StatefulWidget {
 
 class _RatesAppState extends State<RatesApp> {
   static const _key = 'theme_mode';
-  late ThemeMode _mode = switch (widget.prefs.getString(_key)) {
+  late ThemeMode _mode = switch (widget.prefs?.getString(_key)) {
     'light' => ThemeMode.light,
     'dark' => ThemeMode.dark,
     _ => ThemeMode.system,
@@ -219,7 +225,9 @@ class _RatesAppState extends State<RatesApp> {
   void _toggle(bool isDarkNow) {
     final next = isDarkNow ? ThemeMode.light : ThemeMode.dark;
     setState(() => _mode = next);
-    widget.prefs.setString(_key, next == ThemeMode.dark ? 'dark' : 'light');
+    widget.prefs
+        ?.setString(_key, next == ThemeMode.dark ? 'dark' : 'light')
+        .catchError((_) => false);
   }
 
   @override
