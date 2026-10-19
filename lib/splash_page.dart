@@ -80,7 +80,7 @@ class _SplashPageState extends State<SplashPage>
                   height: 28,
                   child: CircularProgressIndicator(
                     strokeWidth: 3,
-                    color: Color(0xFF0F7A5A),
+                    color: Color(0xFF1D4ED8),
                   ),
                 ),
               ),
