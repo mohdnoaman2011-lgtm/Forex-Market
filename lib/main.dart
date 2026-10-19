@@ -1,9 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart' as html_parser;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'splash_page.dart';
 
 Future<void> main() async {
@@ -23,14 +23,7 @@ Future<void> main() async {
       );
   try {
     WidgetsFlutterBinding.ensureInitialized();
-    // إذا فشل التخزين المحلي يعمل التطبيق بدون حفظ الوضع بدل أن يتوقف
-    SharedPreferences? prefs;
-    try {
-      prefs = await SharedPreferences.getInstance();
-    } catch (_) {
-      prefs = null;
-    }
-    runApp(RatesApp(prefs: prefs));
+    runApp(const RatesApp());
   } catch (e, st) {
     runApp(
       MaterialApp(
@@ -207,16 +200,33 @@ ThemeData buildTheme(Brightness b) {
 
 // ───────────────────────── التطبيق ─────────────────────────
 
+/// حفظ اختيار الوضع (فاتح/داكن) في ملف صغير، بدون أي إضافة خارجية.
+class ThemeStore {
+  static File get _file => File(Directory.systemTemp.path + '/theme_mode.txt');
+
+  static String? read() {
+    try {
+      return _file.existsSync() ? _file.readAsStringSync().trim() : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static void write(String v) {
+    try {
+      _file.writeAsStringSync(v);
+    } catch (_) {}
+  }
+}
+
 class RatesApp extends StatefulWidget {
-  final SharedPreferences? prefs;
-  const RatesApp({super.key, required this.prefs});
+  const RatesApp({super.key});
   @override
   State<RatesApp> createState() => _RatesAppState();
 }
 
 class _RatesAppState extends State<RatesApp> {
-  static const _key = 'theme_mode';
-  late ThemeMode _mode = switch (widget.prefs?.getString(_key)) {
+  late ThemeMode _mode = switch (ThemeStore.read()) {
     'light' => ThemeMode.light,
     'dark' => ThemeMode.dark,
     _ => ThemeMode.system,
@@ -225,9 +235,7 @@ class _RatesAppState extends State<RatesApp> {
   void _toggle(bool isDarkNow) {
     final next = isDarkNow ? ThemeMode.light : ThemeMode.dark;
     setState(() => _mode = next);
-    widget.prefs
-        ?.setString(_key, next == ThemeMode.dark ? 'dark' : 'light')
-        .catchError((_) => false);
+    ThemeStore.write(next == ThemeMode.dark ? 'dark' : 'light');
   }
 
   @override
@@ -392,7 +400,7 @@ Widget rateTile(BuildContext context,
     required Color bg,
     required Color fg}) {
   return Container(
-    width: 82,
+    width: 76,
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
     decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -404,7 +412,7 @@ Widget rateTile(BuildContext context,
       const SizedBox(height: 2),
       Text(value,
           textDirection: TextDirection.ltr,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
     ]),
   );
 }
@@ -543,7 +551,7 @@ class RatesPage extends StatelessWidget {
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                           Text(r.name,
                               style: const TextStyle(
-                                  fontSize: 14, fontWeight: FontWeight.w700, height: 1.25)),
+                                  fontSize: 13, fontWeight: FontWeight.w700, height: 1.25)),
                           Text(r.code,
                               textDirection: TextDirection.ltr,
                               style: TextStyle(
