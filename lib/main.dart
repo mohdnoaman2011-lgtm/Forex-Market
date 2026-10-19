@@ -7,9 +7,45 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'splash_page.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
-  runApp(RatesApp(prefs: prefs));
+  // أي خطأ في البناء يظهر نصه على الشاشة بدل الشاشة السوداء
+  ErrorWidget.builder = (details) => Material(
+        color: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SingleChildScrollView(
+            child: Text(
+              details.exceptionAsString(),
+              textDirection: TextDirection.ltr,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
+        ),
+      );
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
+    final prefs = await SharedPreferences.getInstance();
+    runApp(RatesApp(prefs: prefs));
+  } catch (e, st) {
+    runApp(
+      MaterialApp(
+        home: Scaffold(
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: SingleChildScrollView(
+                child: Text(
+                  '$e\n$st',
+                  textDirection: TextDirection.ltr,
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 // ───────────────────────── النماذج والخدمة ─────────────────────────
