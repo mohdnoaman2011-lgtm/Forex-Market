@@ -19,7 +19,6 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: "3.47.7"
           cache: true
 
       - name: Create Android project files
@@ -34,11 +33,6 @@ jobs:
           sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' $M
           sed -i 's#android:label="[^"]*"#android:label="Forex-Market"#' $M
 
-      - name: Disable Impeller
-        run: |
-          M=android/app/src/main/AndroidManifest.xml
-          sed -i 's#</application>#    <meta-data android:name="io.flutter.embedding.android.EnableImpeller" android:value="false"/>\n    </application>#' $M
-
       - run: flutter pub get
 
       - name: Generate launcher icons
@@ -46,9 +40,9 @@ jobs:
 
       - run: flutter analyze --no-fatal-infos
 
-      - run: flutter build apk --debug
+      - run: flutter build apk --release
 
       - uses: actions/upload-artifact@v4
         with:
           name: currency-app-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
