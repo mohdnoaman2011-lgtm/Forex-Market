@@ -400,7 +400,7 @@ Widget rateTile(BuildContext context,
     required Color bg,
     required Color fg}) {
   return Container(
-    width: 84,
+    width: 80,
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
     decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -462,7 +462,7 @@ class RatesPage extends StatelessWidget {
 
     return LayoutBuilder(builder: (context, box) {
       // تضبط المسافات تلقائيًا حسب طول الشاشة ليظهر كل المحتوى بدون تمرير
-      final cp = ((box.maxHeight - 438) / 13.33).clamp(6.0, 12.0).toDouble();
+      final cp = ((box.maxHeight - 438) / 13.33).clamp(6.0, 16.0).toDouble();
 
       return RefreshIndicator(
         onRefresh: onRefresh,
@@ -566,14 +566,14 @@ class RatesPage extends StatelessWidget {
                       padding: EdgeInsets.symmetric(horizontal: 12, vertical: cp),
                       child: Row(children: [
                         Container(
-                          width: 40,
-                          height: 40,
+                          width: 36,
+                          height: 36,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                               color: p.mint,
                               borderRadius: BorderRadius.circular(12)),
                           child: Text(_flags[r.code] ?? '',
-                              style: const TextStyle(fontSize: 22)),
+                              style: const TextStyle(fontSize: 20)),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -593,6 +593,7 @@ class RatesPage extends StatelessWidget {
                                         color: p.muted)),
                               ]),
                         ),
+                        const SizedBox(width: 6),
                         rateTile(context,
                             label: 'موازي',
                             value: fmt(r.parallel),
@@ -660,9 +661,10 @@ class ConverterPage extends StatelessWidget {
   Widget _picker(BuildContext context, String value, ValueChanged<String> cb,
       {required Color bg, required Color fg}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
       child: DropdownButton<String>(
+        isDense: true,
         value: value,
         underline: const SizedBox.shrink(),
         iconEnabledColor: fg,
@@ -701,7 +703,8 @@ class ConverterPage extends StatelessWidget {
             onPressed: onToggleType,
             style: TextButton.styleFrom(
               padding: EdgeInsets.zero,
-              minimumSize: const Size(0, 44),
+              minimumSize: const Size(0, 32),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               alignment: Alignment.centerRight,
             ),
             child: Text(typeLabel + ' · اضغط للتبديل',
@@ -713,7 +716,7 @@ class ConverterPage extends StatelessWidget {
         const SizedBox(height: 8),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: BoxDecoration(
             color: p.card,
             borderRadius: BorderRadius.circular(28),
@@ -726,10 +729,10 @@ class ConverterPage extends StatelessWidget {
             ]),
             Container(
               alignment: Alignment.centerLeft,
-              constraints: const BoxConstraints(minHeight: 62),
+              constraints: const BoxConstraints(minHeight: 50),
               child: Text(amount.isEmpty ? '0' : amount,
                   textDirection: TextDirection.ltr,
-                  style: const TextStyle(fontSize: 44, fontWeight: FontWeight.w700)),
+                  style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w700)),
             ),
           ]),
         ),
@@ -737,12 +740,13 @@ class ConverterPage extends StatelessWidget {
           child: IconButton.filled(
             tooltip: 'تبديل العملتين',
             onPressed: onSwap,
+            style: IconButton.styleFrom(minimumSize: const Size(40, 40)),
             icon: const Icon(Icons.swap_vert),
           ),
         ),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: BoxDecoration(
             gradient: heroGradient,
             borderRadius: BorderRadius.circular(28),
@@ -755,21 +759,21 @@ class ConverterPage extends StatelessWidget {
             ]),
             Container(
               alignment: Alignment.centerLeft,
-              constraints: const BoxConstraints(minHeight: 62),
+              constraints: const BoxConstraints(minHeight: 50),
               child: Text(fmt(amt * unit),
                   textDirection: TextDirection.ltr,
                   style: const TextStyle(
-                      fontSize: 44, fontWeight: FontWeight.w700, color: Colors.white)),
+                      fontSize: 38, fontWeight: FontWeight.w700, color: Colors.white)),
             ),
           ]),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Center(
           child: Text('1 $from = ${fmt(unit, 4)} $to',
               textDirection: TextDirection.ltr,
               style: TextStyle(color: p.muted, fontSize: 12)),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Directionality(
           textDirection: TextDirection.ltr,
           child: GridView.count(
@@ -778,7 +782,7 @@ class ConverterPage extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             mainAxisSpacing: 8,
             crossAxisSpacing: 8,
-            childAspectRatio: 2.3,
+            childAspectRatio: 2.7,
             children: [
               for (final k in const ['1','2','3','4','5','6','7','8','9','.','0','⌫'])
                 TextButton(
