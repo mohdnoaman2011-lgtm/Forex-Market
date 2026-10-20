@@ -245,3 +245,581 @@ class _RatesAppState extends State<RatesApp> {
       debugShowCheckedModeBanner: false,
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),
+      themeMode: _mode,
+      builder: (c, child) =>
+          Directionality(textDirection: TextDirection.rtl, child: child!),
+      home: SplashPage(next: HomePage(onToggleTheme: _toggle)),
+    );
+  }
+}
+
+// ───────────────────────── الصفحة الرئيسية ─────────────────────────
+
+class HomePage extends StatefulWidget {
+  final ValueChanged<bool> onToggleTheme;
+  const HomePage({super.key, required this.onToggleTheme});
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late Future<RatesData> _future = RatesService.fetch();
+  RateType _type = RateType.parallel;
+  int _tab = 0;
+  String _from = 'USD', _to = 'SDG', _amount = '100';
+
+  void _reload() => setState(() => _future = RatesService.fetch());
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Palette.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final themeButton = IconButton(
+      tooltip: 'تبديل الوضع الداكن والفاتح',
+      onPressed: () => widget.onToggleTheme(isDark),
+      style: IconButton.styleFrom(
+        backgroundColor: p.card,
+        foregroundColor: p.text,
+        minimumSize: const Size(44, 44),
+        side: BorderSide(color: p.line),
+      ),
+      icon: Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
+    );
+
+    return Scaffold(
+      body: SafeArea(
+        child: FutureBuilder<RatesData>(
+          future: _future,
+          builder: (context, snap) {
+            if (snap.connectionState != ConnectionState.done) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snap.hasError) {
+              return Center(
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Text('${snap.error}', textAlign: TextAlign.center),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                      onPressed: _reload, child: const Text('إعادة المحاولة')),
+                ]),
+              );
+            }
+            final data = snap.data!;
+            return _tab == 0
+                ? RatesPage(
+                    data: data,
+                    type: _type,
+                    onType: (t) => setState(() => _type = t),
+                    action: themeButton,
+                    // الضغط على بطاقة عملة ينقلك للمحوّل ومعها تلك العملة
+                    onPick: (c) => setState(() {
+                      _from = c;
+                      _to = 'SDG';
+                      _tab = 1;
+                    }),
+                    onRefresh: () async {
+                      _reload();
+                      await _future;
+                    },
+                  )
+                : ConverterPage(
+                    rates: data.rates,
+                    type: _type,
+                    action: themeButton,
+                    from: _from,
+                    to: _to,
+                    amount: _amount,
+                    onToggleType: () => setState(() => _type =
+                        _type == RateType.parallel
+                            ? RateType.bank
+                            : RateType.parallel),
+                    onFrom: (v) => setState(() => _from = v),
+                    onTo: (v) => setState(() => _to = v),
+                    onSwap: () => setState(() {
+                      final t = _from;
+                      _from = _to;
+                      _to = t;
+                    }),
+                    onAmount: (v) => setState(() => _amount = v),
+                  );
+          },
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(40, 8, 40, 16),
+          child: Container(
+            height: 64,
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: p.card,
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: p.line),
+            ),
+            child: Row(children: [
+              for (final e in const [(0, 'الأسعار'), (1, 'المحوّل')])
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => setState(() => _tab = e.$1),
+                    style: TextButton.styleFrom(
+                      backgroundColor:
+                          _tab == e.$1 ? p.accent : Colors.transparent,
+                      foregroundColor: _tab == e.$1 ? p.onAccent : p.muted,
+                      shape: const StadiumBorder(),
+                      textStyle: TextStyle(
+                          fontWeight:
+                              _tab == e.$1 ? FontWeight.w700 : FontWeight.w500),
+                    ),
+                    child: Text(e.$2),
+                  ),
+                ),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ───────────────────────── عناصر مشتركة ─────────────────────────
+
+Widget screenHeader(BuildContext context, String title, Widget sub, Widget action) {
+  return Row(children: [
+    Expanded(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(title, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
+        sub,
+      ]),
+    ),
+    action,
+  ]);
+}
+
+Widget rateTile(BuildContext context,
+    {required String label,
+    required String value,
+    required IconData icon,
+    required Color bg,
+    required Color fg,
+    double width = 80,
+    double fontSize = 14}) {
+  return Container(
+    width: width,
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [
+        Icon(icon, size: 12, color: fg),
+        const SizedBox(width: 4),
+        Text(label, style: TextStyle(fontSize: 11, color: fg)),
+      ]),
+      const SizedBox(height: 2),
+      // الرقم يبقى في سطر واحد ويصغر تلقائيًا إذا كان طويلًا
+      FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerRight,
+        child: Text(value,
+            textDirection: TextDirection.ltr,
+            softWrap: false,
+            style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w700)),
+      ),
+    ]),
+  );
+}
+
+// ───────────────────────── شاشة الأسعار ─────────────────────────
+
+class RatesPage extends StatelessWidget {
+  final RatesData data;
+  final RateType type;
+  final ValueChanged<RateType> onType;
+  final Widget action;
+  final ValueChanged<String> onPick;
+  final Future<void> Function() onRefresh;
+  const RatesPage({
+    super.key,
+    required this.data,
+    required this.type,
+    required this.onType,
+    required this.action,
+    required this.onPick,
+    required this.onRefresh,
+  });
+
+  static const _flags = {
+    'USD': '🇺🇸',
+    'EUR': '🇪🇺',
+    'AED': '🇦🇪',
+    'SAR': '🇸🇦',
+    'QAR': '🇶🇦',
+    'EGP': '🇪🇬',
+  };
+  static const _order = ['AED', 'EGP', 'EUR', 'SAR', 'QAR'];
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Palette.of(context);
+    final par = type == RateType.parallel;
+    // يعرض أسعار النوع المحدد فقط (موازي أو بنك)
+    Widget priceTile(Rate r) => par
+        ? rateTile(context,
+            label: 'موازي',
+            value: fmt(r.parallel),
+            icon: Icons.storefront_outlined,
+            bg: p.cream,
+            fg: p.amber,
+            width: 120,
+            fontSize: 20)
+        : rateTile(context,
+            label: 'بنك',
+            value: fmt(r.bank),
+            icon: Icons.account_balance_outlined,
+            bg: p.mint,
+            fg: p.mintText,
+            width: 120,
+            fontSize: 20);
+    final usd = data.rates.firstWhere((r) => r.code == 'USD',
+        orElse: () => data.rates.first);
+    final list = [
+      for (final c in _order) ...data.rates.where((r) => r.code == c),
+    ];
+    final subText = data.updatedAgo != null
+        ? 'آخر تحديث منذ ' + data.updatedAgo!
+        : 'مقابل الجنيه السوداني';
+
+    return LayoutBuilder(builder: (context, box) {
+      // تضبط المسافات تلقائيًا حسب طول الشاشة ليظهر كل المحتوى بدون تمرير
+      final cp = ((box.maxHeight - 526) / 13.33).clamp(6.0, 16.0).toDouble();
+
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+          children: [
+            screenHeader(
+              context,
+              'أسعار العملات',
+              Text(subText, style: TextStyle(fontSize: 12, color: p.muted)),
+              action,
+            ),
+            const SizedBox(height: 10),
+            SegmentedButton<RateType>(
+              expandedInsets: EdgeInsets.zero,
+              showSelectedIcon: true,
+              segments: const [
+                ButtonSegment(value: RateType.parallel, label: Text('موازي')),
+                ButtonSegment(value: RateType.bank, label: Text('بنك')),
+              ],
+              selected: {type},
+              onSelectionChanged: (s) => onType(s.first),
+              style: SegmentedButton.styleFrom(
+                backgroundColor: p.card,
+                foregroundColor: p.muted,
+                selectedBackgroundColor: p.mint,
+                selectedForegroundColor: p.mintText,
+                side: BorderSide(color: p.line),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Row(children: [
+              Container(
+                  width: 8,
+                  height: 8,
+                  decoration:
+                      BoxDecoration(color: p.accent, shape: BoxShape.circle)),
+              const SizedBox(width: 8),
+              const Text('أسعار اليوم',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+              const SizedBox(width: 8),
+              Expanded(child: Container(height: 1, color: p.line)),
+            ]),
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                gradient: heroGradient,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: DefaultTextStyle(
+                style: const TextStyle(color: Colors.white),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(usd.name + (par ? ' – السوق الموازي' : ' – سعر البنك'),
+                          style: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 4),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text.rich(
+                              TextSpan(children: [
+                                TextSpan(
+                                    text: fmt(usd.of(type)),
+                                    style: const TextStyle(
+                                        fontSize: 44,
+                                        fontWeight: FontWeight.w700,
+                                        height: 1.1)),
+                                const TextSpan(
+                                    text: ' ج.س',
+                                    style: TextStyle(fontSize: 12)),
+                              ]),
+                              textDirection: TextDirection.ltr,
+                            ),
+                          ]),
+                    ]),
+              ),
+            ),
+            const SizedBox(height: 10),
+            for (final r in list)
+              Padding(
+                padding: EdgeInsets.only(bottom: cp / 1.5),
+                child: Material(
+                  color: p.card,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    side: BorderSide(color: p.line),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(24),
+                    onTap: () => onPick(r.code),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: cp),
+                      child: Row(children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                              color: p.mint,
+                              borderRadius: BorderRadius.circular(12)),
+                          child: Text(_flags[r.code] ?? '',
+                              style: const TextStyle(fontSize: 22)),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(r.name,
+                                    style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        height: 1.25)),
+                                Text(r.code,
+                                    textDirection: TextDirection.ltr,
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: p.muted)),
+                              ]),
+                        ),
+                        const SizedBox(width: 6),
+                        priceTile(r),
+                      ]),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+// ───────────────────────── شاشة المحوّل ─────────────────────────
+
+String applyKey(String a, String k) {
+  if (k == '⌫') return a.isEmpty ? a : a.substring(0, a.length - 1);
+  if (k == '.') return a.contains('.') ? a : (a.isEmpty ? '0' : a) + '.';
+  if (a.length >= 12) return a;
+  return (a == '0' ? '' : a) + k;
+}
+
+class ConverterPage extends StatelessWidget {
+  final List<Rate> rates;
+  final RateType type;
+  final Widget action;
+  final String from, to, amount;
+  final VoidCallback onToggleType, onSwap;
+  final ValueChanged<String> onFrom, onTo, onAmount;
+  const ConverterPage({
+    super.key,
+    required this.rates,
+    required this.type,
+    required this.action,
+    required this.from,
+    required this.to,
+    required this.amount,
+    required this.onToggleType,
+    required this.onFrom,
+    required this.onTo,
+    required this.onSwap,
+    required this.onAmount,
+  });
+
+  double _rate(String c) =>
+      c == 'SDG' ? 1 : rates.firstWhere((r) => r.code == c).of(type);
+
+  Map<String, String> get _names => {
+        'SDG': 'الجنيه السوداني',
+        for (final r in rates) r.code: r.name,
+      };
+
+  Widget _picker(BuildContext context, String value, ValueChanged<String> cb,
+      {required Color bg, required Color fg}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
+      child: DropdownButton<String>(
+        isDense: true,
+        value: value,
+        underline: const SizedBox.shrink(),
+        iconEnabledColor: fg,
+        selectedItemBuilder: (c) => [
+          for (final e in _names.entries)
+            Align(
+              alignment: Alignment.center,
+              child: Text(e.key,
+                  textDirection: TextDirection.ltr,
+                  style: TextStyle(color: fg, fontWeight: FontWeight.w600)),
+            ),
+        ],
+        items: [
+          for (final e in _names.entries)
+            DropdownMenuItem(value: e.key, child: Text(e.value + ' (' + e.key + ')')),
+        ],
+        onChanged: (v) => cb(v!),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = Palette.of(context);
+    final amt = double.tryParse(amount) ?? 0;
+    final unit = _rate(from) / _rate(to);
+    final typeLabel = type == RateType.parallel ? 'سعر موازي' : 'سعر بنك';
+
+    return LayoutBuilder(builder: (context, box) {
+      // ارتفاع المفاتيح يتكيّف مع طول الشاشة (بين 40 و60) بدل قصّ الأرقام
+      final keyH = ((box.maxHeight - 450) / 4 - 6).clamp(40.0, 60.0).toDouble();
+      final cellW = (box.maxWidth - 40 - 16) / 3;
+      final ratio = cellW / keyH;
+
+      return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      children: [
+        screenHeader(
+          context,
+          'المحوّل',
+          TextButton(
+            onPressed: onToggleType,
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(0, 32),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              alignment: Alignment.centerRight,
+            ),
+            child: Text(typeLabel + ' · اضغط للتبديل',
+                style: TextStyle(
+                    fontSize: 13, fontWeight: FontWeight.w600, color: p.mintText)),
+          ),
+          action,
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          decoration: BoxDecoration(
+            color: p.card,
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: p.line),
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text('من', style: TextStyle(fontSize: 13, color: p.muted)),
+              _picker(context, from, onFrom, bg: p.chip, fg: p.text),
+            ]),
+            Container(
+              alignment: Alignment.centerLeft,
+              constraints: const BoxConstraints(minHeight: 50),
+              child: Text(amount.isEmpty ? '0' : amount,
+                  textDirection: TextDirection.ltr,
+                  style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w700)),
+            ),
+          ]),
+        ),
+        Center(
+          child: IconButton.filled(
+            tooltip: 'تبديل العملتين',
+            onPressed: onSwap,
+            style: IconButton.styleFrom(minimumSize: const Size(40, 40)),
+            icon: const Icon(Icons.swap_vert),
+          ),
+        ),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: heroGradient,
+            borderRadius: BorderRadius.circular(28),
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              const Text('إلى', style: TextStyle(fontSize: 13, color: Colors.white)),
+              _picker(context, to, onTo,
+                  bg: const Color(0x33FFFFFF), fg: Colors.white),
+            ]),
+            Container(
+              alignment: Alignment.centerLeft,
+              constraints: const BoxConstraints(minHeight: 50),
+              child: Text(fmt(amt * unit),
+                  textDirection: TextDirection.ltr,
+                  style: const TextStyle(
+                      fontSize: 38, fontWeight: FontWeight.w700, color: Colors.white)),
+            ),
+          ]),
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: Text('1 $from = ${fmt(unit, 4)} $to',
+              textDirection: TextDirection.ltr,
+              style: TextStyle(color: p.muted, fontSize: 12)),
+        ),
+        const SizedBox(height: 8),
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: GridView.count(
+            crossAxisCount: 3,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            childAspectRatio: ratio,
+            children: [
+              for (final k in const ['1','2','3','4','5','6','7','8','9','.','0','⌫'])
+                TextButton(
+                  onPressed: () => onAmount(applyKey(amount, k)),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    backgroundColor: p.card,
+                    foregroundColor: p.text,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                      side: BorderSide(color: p.line),
+                    ),
+                    textStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
+                  ),
+                  child: Text(k),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+    });
+  }
+}
