@@ -400,7 +400,7 @@ Widget rateTile(BuildContext context,
     required Color bg,
     required Color fg}) {
   return Container(
-    width: 76,
+    width: 84,
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
     decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -410,9 +410,15 @@ Widget rateTile(BuildContext context,
         Text(label, style: TextStyle(fontSize: 11, color: fg)),
       ]),
       const SizedBox(height: 2),
-      Text(value,
-          textDirection: TextDirection.ltr,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+      // الرقم يبقى في سطر واحد ويصغر تلقائيًا إذا كان طويلًا
+      FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerRight,
+        child: Text(value,
+            textDirection: TextDirection.ltr,
+            softWrap: false,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+      ),
     ]),
   );
 }
@@ -454,131 +460,161 @@ class RatesPage extends StatelessWidget {
         ? 'آخر تحديث منذ ' + data.updatedAgo!
         : 'مقابل الجنيه السوداني';
 
-    return RefreshIndicator(
-      onRefresh: onRefresh,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-        children: [
-          screenHeader(
-            context,
-            'أسعار العملات',
-            Text(subText, style: TextStyle(fontSize: 13, color: p.muted)),
-            action,
-          ),
-          const SizedBox(height: 14),
-          Row(children: [
+    return LayoutBuilder(builder: (context, box) {
+      // تضبط المسافات تلقائيًا حسب طول الشاشة ليظهر كل المحتوى بدون تمرير
+      final cp = ((box.maxHeight - 438) / 13.33).clamp(6.0, 12.0).toDouble();
+
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+          children: [
+            screenHeader(
+              context,
+              'أسعار العملات',
+              Text(subText, style: TextStyle(fontSize: 12, color: p.muted)),
+              action,
+            ),
+            const SizedBox(height: 10),
+            Row(children: [
+              Container(
+                  width: 8,
+                  height: 8,
+                  decoration:
+                      BoxDecoration(color: p.accent, shape: BoxShape.circle)),
+              const SizedBox(width: 8),
+              const Text('أسعار اليوم',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+              const SizedBox(width: 8),
+              Expanded(child: Container(height: 1, color: p.line)),
+            ]),
+            const SizedBox(height: 6),
             Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(color: p.accent, shape: BoxShape.circle)),
-            const SizedBox(width: 8),
-            const Text('أسعار اليوم',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
-            const SizedBox(width: 8),
-            Expanded(child: Container(height: 1, color: p.line)),
-          ]),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              gradient: heroGradient,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: DefaultTextStyle(
-              style: const TextStyle(color: Colors.white),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(usd.name + ' – السوق الموازي',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 8),
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Text.rich(
-                    TextSpan(children: [
-                      TextSpan(
-                          text: fmt(usd.parallel),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                gradient: heroGradient,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: DefaultTextStyle(
+                style: const TextStyle(color: Colors.white),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(usd.name + ' – السوق الموازي',
                           style: const TextStyle(
-                              fontSize: 40, fontWeight: FontWeight.w700, height: 1.1)),
-                      const TextSpan(text: ' ج.س', style: TextStyle(fontSize: 13)),
-                    ]),
-                    textDirection: TextDirection.ltr,
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: const Color(0x2EFFFFFF),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      const Row(children: [
-                        Icon(Icons.account_balance_outlined, size: 12, color: Colors.white),
-                        SizedBox(width: 6),
-                        Text('بنك', style: TextStyle(fontSize: 12)),
-                      ]),
-                      Text(fmt(usd.bank),
-                          textDirection: TextDirection.ltr,
-                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-                    ]),
-                  ),
-                ]),
-              ]),
-            ),
-          ),
-          const SizedBox(height: 14),
-          for (final r in list)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Material(
-                color: p.card,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  side: BorderSide(color: p.line),
-                ),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(24),
-                  onTap: () => onPick(r.code),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                            color: p.mint, borderRadius: BorderRadius.circular(12)),
-                        child: Text(_flags[r.code] ?? '', style: const TextStyle(fontSize: 22)),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(r.name,
-                              style: const TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.w700, height: 1.25)),
-                          Text(r.code,
+                              fontSize: 12, fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 4),
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text.rich(
+                              TextSpan(children: [
+                                TextSpan(
+                                    text: fmt(usd.parallel),
+                                    style: const TextStyle(
+                                        fontSize: 36,
+                                        fontWeight: FontWeight.w700,
+                                        height: 1.1)),
+                                const TextSpan(
+                                    text: ' ج.س',
+                                    style: TextStyle(fontSize: 12)),
+                              ]),
                               textDirection: TextDirection.ltr,
-                              style: TextStyle(
-                                  fontSize: 11, fontWeight: FontWeight.w700, color: p.muted)),
-                        ]),
-                      ),
-                      rateTile(context,
-                          label: 'موازي',
-                          value: fmt(r.parallel),
-                          icon: Icons.storefront_outlined,
-                          bg: p.cream,
-                          fg: p.amber),
-                      const SizedBox(width: 6),
-                      rateTile(context,
-                          label: 'بنك',
-                          value: fmt(r.bank),
-                          icon: Icons.account_balance_outlined,
-                          bg: p.mint,
-                          fg: p.mintText),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: const Color(0x2EFFFFFF),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Row(children: [
+                                      Icon(Icons.account_balance_outlined,
+                                          size: 12, color: Colors.white),
+                                      SizedBox(width: 6),
+                                      Text('بنك',
+                                          style: TextStyle(fontSize: 12)),
+                                    ]),
+                                    Text(fmt(usd.bank),
+                                        textDirection: TextDirection.ltr,
+                                        style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700)),
+                                  ]),
+                            ),
+                          ]),
                     ]),
+              ),
+            ),
+            const SizedBox(height: 10),
+            for (final r in list)
+              Padding(
+                padding: EdgeInsets.only(bottom: cp / 1.5),
+                child: Material(
+                  color: p.card,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    side: BorderSide(color: p.line),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(24),
+                    onTap: () => onPick(r.code),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: cp),
+                      child: Row(children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                              color: p.mint,
+                              borderRadius: BorderRadius.circular(12)),
+                          child: Text(_flags[r.code] ?? '',
+                              style: const TextStyle(fontSize: 22)),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(r.name,
+                                    style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        height: 1.25)),
+                                Text(r.code,
+                                    textDirection: TextDirection.ltr,
+                                    style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: p.muted)),
+                              ]),
+                        ),
+                        rateTile(context,
+                            label: 'موازي',
+                            value: fmt(r.parallel),
+                            icon: Icons.storefront_outlined,
+                            bg: p.cream,
+                            fg: p.amber),
+                        const SizedBox(width: 6),
+                        rateTile(context,
+                            label: 'بنك',
+                            value: fmt(r.bank),
+                            icon: Icons.account_balance_outlined,
+                            bg: p.mint,
+                            fg: p.mintText),
+                      ]),
+                    ),
                   ),
                 ),
               ),
-            ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 }
 
