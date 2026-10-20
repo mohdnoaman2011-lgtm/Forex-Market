@@ -693,7 +693,13 @@ class ConverterPage extends StatelessWidget {
     final unit = _rate(from) / _rate(to);
     final typeLabel = type == RateType.parallel ? 'سعر موازي' : 'سعر بنك';
 
-    return ListView(
+    return LayoutBuilder(builder: (context, box) {
+      // ارتفاع المفاتيح يتكيّف مع طول الشاشة (بين 40 و60) بدل قصّ الأرقام
+      final keyH = ((box.maxHeight - 450) / 4 - 6).clamp(40.0, 60.0).toDouble();
+      final cellW = (box.maxWidth - 40 - 16) / 3;
+      final ratio = cellW / keyH;
+
+      return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       children: [
         screenHeader(
@@ -782,12 +788,14 @@ class ConverterPage extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             mainAxisSpacing: 8,
             crossAxisSpacing: 8,
-            childAspectRatio: 2.7,
+            childAspectRatio: ratio,
             children: [
               for (final k in const ['1','2','3','4','5','6','7','8','9','.','0','⌫'])
                 TextButton(
                   onPressed: () => onAmount(applyKey(amount, k)),
                   style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
                     backgroundColor: p.card,
                     foregroundColor: p.text,
                     shape: RoundedRectangleBorder(
@@ -803,5 +811,6 @@ class ConverterPage extends StatelessWidget {
         ),
       ],
     );
+    });
   }
 }
