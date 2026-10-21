@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import 'splash_page.dart';
 
 Future<void> main() async {
-  // أي خطأ في البناء يظهر نصه على الشاشة بدل الشاشة السوداء
+
   ErrorWidget.builder = (details) => Material(
         color: Colors.white,
         child: Padding(
@@ -47,13 +47,13 @@ Future<void> main() async {
   }
 }
 
-// ───────────────────────── النماذج والخدمة ─────────────────────────
+
 
 enum RateType { parallel, bank }
 
 class Rate {
   final String code, name;
-  final double parallel, bank; // السعر بالجنيه السوداني
+  final double parallel, bank;
   const Rate(this.code, this.name, this.parallel, this.bank);
   double of(RateType t) => t == RateType.parallel ? parallel : bank;
 }
@@ -67,14 +67,14 @@ class RatesData {
 class RatesService {
   static const _url = 'https://status.sd/';
 
-  // الاسم كما يظهر في الموقع → (الرمز، الاسم المعروض)
+
   static const _currencies = <String, List<String>>{
-    'الدولار الامريكي': ['USD', 'الدولار الأمريكي'],
-    'اليورو': ['EUR', 'اليورو'],
-    'الدرهم الاماراتي': ['AED', 'الدرهم الإماراتي'],
-    'الريال السعودي': ['SAR', 'الريال السعودي'],
-    'الريال القطري': ['QAR', 'الريال القطري'],
-    'الجنيه المصري': ['EGP', 'الجنيه المصري'],
+    '\u0627\u0644\u062F\u0648\u0644\u0627\u0631 \u0627\u0644\u0627\u0645\u0631\u064A\u0643\u064A': ['USD', '\u0627\u0644\u062F\u0648\u0644\u0627\u0631 \u0627\u0644\u0623\u0645\u0631\u064A\u0643\u064A'],
+    '\u0627\u0644\u064A\u0648\u0631\u0648': ['EUR', '\u0627\u0644\u064A\u0648\u0631\u0648'],
+    '\u0627\u0644\u062F\u0631\u0647\u0645 \u0627\u0644\u0627\u0645\u0627\u0631\u0627\u062A\u064A': ['AED', '\u0627\u0644\u062F\u0631\u0647\u0645 \u0627\u0644\u0625\u0645\u0627\u0631\u0627\u062A\u064A'],
+    '\u0627\u0644\u0631\u064A\u0627\u0644 \u0627\u0644\u0633\u0639\u0648\u062F\u064A': ['SAR', '\u0627\u0644\u0631\u064A\u0627\u0644 \u0627\u0644\u0633\u0639\u0648\u062F\u064A'],
+    '\u0627\u0644\u0631\u064A\u0627\u0644 \u0627\u0644\u0642\u0637\u0631\u064A': ['QAR', '\u0627\u0644\u0631\u064A\u0627\u0644 \u0627\u0644\u0642\u0637\u0631\u064A'],
+    '\u0627\u0644\u062C\u0646\u064A\u0647 \u0627\u0644\u0645\u0635\u0631\u064A': ['EGP', '\u0627\u0644\u062C\u0646\u064A\u0647 \u0627\u0644\u0645\u0635\u0631\u064A'],
   };
 
   static double _num(String s) => double.parse(s.replaceAll(',', ''));
@@ -83,7 +83,7 @@ class RatesService {
     final res = await http
         .get(Uri.parse(_url))
         .timeout(const Duration(seconds: 15));
-    if (res.statusCode != 200) throw Exception('خطأ ${res.statusCode}');
+    if (res.statusCode != 200) throw Exception('\u062E\u0637\u0623 ${res.statusCode}');
 
     final doc = html_parser.parse(utf8.decode(res.bodyBytes));
     final text = (doc.body?.text ?? '').replaceAll(RegExp(r'\s+'), ' ');
@@ -91,17 +91,17 @@ class RatesService {
     final rates = <Rate>[];
     _currencies.forEach((siteName, info) {
       final m = RegExp(
-        '${RegExp.escape(siteName)}[^\\d]*?موازي[^\\d]*([\\d,.]+)[^\\d]*?بنك[^\\d]*([\\d,.]+)',
-      ).firstMatch(text); // أول تطابق فقط (القائمة مكررة في الصفحة)
+        '${RegExp.escape(siteName)}[^\\d]*?\u0645\u0648\u0627\u0632\u064A[^\\d]*([\\d,.]+)[^\\d]*?\u0628\u0646\u0643[^\\d]*([\\d,.]+)',
+      ).firstMatch(text);
       if (m != null) {
         rates.add(Rate(info[0], info[1], _num(m.group(1)!), _num(m.group(2)!)));
       }
     });
     if (rates.isEmpty) {
-      throw Exception('تعذّر قراءة الأسعار، ربما تغيّر شكل الصفحة');
+      throw Exception('\u062A\u0639\u0630\u0651\u0631 \u0642\u0631\u0627\u0621\u0629 \u0627\u0644\u0623\u0633\u0639\u0627\u0631\u060C \u0631\u0628\u0645\u0627 \u062A\u063A\u064A\u0651\u0631 \u0634\u0643\u0644 \u0627\u0644\u0635\u0641\u062D\u0629');
     }
 
-    final ago = RegExp(r'آخر تحديث منذ\s*(\d+\s*\S+)').firstMatch(text)?.group(1);
+    final ago = RegExp(r'\u0622\u062E\u0631 \u062A\u062D\u062F\u064A\u062B \u0645\u0646\u0630\s*(\d+\s*\S+)').firstMatch(text)?.group(1);
     return RatesData(rates, ago);
   }
 }
@@ -116,7 +116,7 @@ String fmt(double v, [int d = 2]) {
   return p.length > 1 ? '$i.${p[1]}' : i;
 }
 
-// ───────────────────────── الألوان والثيم ─────────────────────────
+
 
 class Palette {
   final Color bg, card, line, chip, text, muted, mint, mintText, cream, amber,
@@ -198,9 +198,9 @@ ThemeData buildTheme(Brightness b) {
   );
 }
 
-// ───────────────────────── التطبيق ─────────────────────────
 
-/// حفظ اختيار الوضع (فاتح/داكن) في ملف صغير، بدون أي إضافة خارجية.
+
+
 class ThemeStore {
   static File get _file => File(Directory.systemTemp.path + '/theme_mode.txt');
 
@@ -241,7 +241,7 @@ class _RatesAppState extends State<RatesApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'أسعار العملات',
+      title: '\u0623\u0633\u0639\u0627\u0631 \u0627\u0644\u0639\u0645\u0644\u0627\u062A',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),
@@ -253,7 +253,7 @@ class _RatesAppState extends State<RatesApp> {
   }
 }
 
-// ───────────────────────── الصفحة الرئيسية ─────────────────────────
+
 
 class HomePage extends StatefulWidget {
   final ValueChanged<bool> onToggleTheme;
@@ -275,7 +275,7 @@ class _HomePageState extends State<HomePage> {
     final p = Palette.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final themeButton = IconButton(
-      tooltip: 'تبديل الوضع الداكن والفاتح',
+      tooltip: '\u062A\u0628\u062F\u064A\u0644 \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u062F\u0627\u0643\u0646 \u0648\u0627\u0644\u0641\u0627\u062A\u062D',
       onPressed: () => widget.onToggleTheme(isDark),
       style: IconButton.styleFrom(
         backgroundColor: p.card,
@@ -300,7 +300,7 @@ class _HomePageState extends State<HomePage> {
                   Text('${snap.error}', textAlign: TextAlign.center),
                   const SizedBox(height: 12),
                   FilledButton(
-                      onPressed: _reload, child: const Text('إعادة المحاولة')),
+                      onPressed: _reload, child: const Text('\u0625\u0639\u0627\u062F\u0629 \u0627\u0644\u0645\u062D\u0627\u0648\u0644\u0629')),
                 ]),
               );
             }
@@ -311,7 +311,7 @@ class _HomePageState extends State<HomePage> {
                     type: _type,
                     onType: (t) => setState(() => _type = t),
                     action: themeButton,
-                    // الضغط على بطاقة عملة ينقلك للمحوّل ومعها تلك العملة
+
                     onPick: (c) => setState(() {
                       _from = c;
                       _to = 'SDG';
@@ -357,7 +357,7 @@ class _HomePageState extends State<HomePage> {
               border: Border.all(color: p.line),
             ),
             child: Row(children: [
-              for (final e in const [(0, 'الأسعار'), (1, 'المحوّل')])
+              for (final e in const [(0, '\u0627\u0644\u0623\u0633\u0639\u0627\u0631'), (1, '\u0627\u0644\u0645\u062D\u0648\u0651\u0644')])
                 Expanded(
                   child: TextButton(
                     onPressed: () => setState(() => _tab = e.$1),
@@ -381,7 +381,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// ───────────────────────── عناصر مشتركة ─────────────────────────
+
 
 Widget screenHeader(BuildContext context, String title, Widget sub, Widget action) {
   return Row(children: [
@@ -405,29 +405,33 @@ Widget rateTile(BuildContext context,
     double fontSize = 14}) {
   return Container(
     width: width,
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
     decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(children: [
-        Icon(icon, size: 12, color: fg),
-        const SizedBox(width: 4),
-        Text(label, style: TextStyle(fontSize: 11, color: fg)),
-      ]),
-      const SizedBox(height: 2),
-      // الرقم يبقى في سطر واحد ويصغر تلقائيًا إذا كان طويلًا
-      FittedBox(
-        fit: BoxFit.scaleDown,
-        alignment: Alignment.centerRight,
-        child: Text(value,
-            textDirection: TextDirection.ltr,
-            softWrap: false,
-            style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w700)),
-      ),
-    ]),
+    child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(icon, size: 12, color: fg),
+            const SizedBox(width: 4),
+            Text(label, style: TextStyle(fontSize: 11, color: fg, height: 1.2)),
+          ]),
+          const SizedBox(height: 2),
+
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text(value,
+                textDirection: TextDirection.ltr,
+                softWrap: false,
+                style: TextStyle(
+                    fontSize: fontSize, fontWeight: FontWeight.w700, height: 1.15)),
+          ),
+        ]),
   );
 }
 
-// ───────────────────────── شاشة الأسعار ─────────────────────────
+
 
 class RatesPage extends StatelessWidget {
   final RatesData data;
@@ -447,12 +451,12 @@ class RatesPage extends StatelessWidget {
   });
 
   static const _flags = {
-    'USD': '🇺🇸',
-    'EUR': '🇪🇺',
-    'AED': '🇦🇪',
-    'SAR': '🇸🇦',
-    'QAR': '🇶🇦',
-    'EGP': '🇪🇬',
+    'USD': '\u{1F1FA}\u{1F1F8}',
+    'EUR': '\u{1F1EA}\u{1F1FA}',
+    'AED': '\u{1F1E6}\u{1F1EA}',
+    'SAR': '\u{1F1F8}\u{1F1E6}',
+    'QAR': '\u{1F1F6}\u{1F1E6}',
+    'EGP': '\u{1F1EA}\u{1F1EC}',
   };
   static const _order = ['AED', 'EGP', 'EUR', 'SAR', 'QAR'];
 
@@ -460,10 +464,10 @@ class RatesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = Palette.of(context);
     final par = type == RateType.parallel;
-    // يعرض أسعار النوع المحدد فقط (موازي أو بنك)
+
     Widget priceTile(Rate r) => par
         ? rateTile(context,
-            label: 'موازي',
+            label: '\u0645\u0648\u0627\u0632\u064A',
             value: fmt(r.parallel),
             icon: Icons.storefront_outlined,
             bg: p.cream,
@@ -471,7 +475,7 @@ class RatesPage extends StatelessWidget {
             width: 120,
             fontSize: 20)
         : rateTile(context,
-            label: 'بنك',
+            label: '\u0628\u0646\u0643',
             value: fmt(r.bank),
             icon: Icons.account_balance_outlined,
             bg: p.mint,
@@ -484,154 +488,172 @@ class RatesPage extends StatelessWidget {
       for (final c in _order) ...data.rates.where((r) => r.code == c),
     ];
     final subText = data.updatedAgo != null
-        ? 'آخر تحديث منذ ' + data.updatedAgo!
-        : 'مقابل الجنيه السوداني';
+        ? '\u0622\u062E\u0631 \u062A\u062D\u062F\u064A\u062B \u0645\u0646\u0630 ' + data.updatedAgo!
+        : '\u0645\u0642\u0627\u0628\u0644 \u0627\u0644\u062C\u0646\u064A\u0647 \u0627\u0644\u0633\u0648\u062F\u0627\u0646\u064A';
 
     return LayoutBuilder(builder: (context, box) {
-      // تضبط المسافات تلقائيًا حسب طول الشاشة ليظهر كل المحتوى بدون تمرير
-      final cp = ((box.maxHeight - 526) / 13.33).clamp(6.0, 16.0).toDouble();
+
+      final h = box.maxHeight < 600 ? 600.0 : box.maxHeight;
+
+      Widget currencyCard(Rate r) => Material(
+            color: p.card,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+              side: BorderSide(color: p.line),
+            ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(24),
+              onTap: () => onPick(r.code),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                        color: p.mint, borderRadius: BorderRadius.circular(12)),
+                    child: Text(_flags[r.code] ?? '',
+                        style: const TextStyle(fontSize: 22)),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(r.name,
+                              style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.2)),
+                          Text(r.code,
+                              textDirection: TextDirection.ltr,
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.2,
+                                  color: p.muted)),
+                        ]),
+                  ),
+                  const SizedBox(width: 6),
+                  priceTile(r),
+                ]),
+              ),
+            ),
+          );
 
       return RefreshIndicator(
         onRefresh: onRefresh,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-          children: [
-            screenHeader(
-              context,
-              'أسعار العملات',
-              Text(subText, style: TextStyle(fontSize: 12, color: p.muted)),
-              action,
-            ),
-            const SizedBox(height: 10),
-            SegmentedButton<RateType>(
-              expandedInsets: EdgeInsets.zero,
-              showSelectedIcon: true,
-              segments: const [
-                ButtonSegment(value: RateType.parallel, label: Text('موازي')),
-                ButtonSegment(value: RateType.bank, label: Text('بنك')),
-              ],
-              selected: {type},
-              onSelectionChanged: (s) => onType(s.first),
-              style: SegmentedButton.styleFrom(
-                backgroundColor: p.card,
-                foregroundColor: p.muted,
-                selectedBackgroundColor: p.mint,
-                selectedForegroundColor: p.mintText,
-                side: BorderSide(color: p.line),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Row(children: [
-              Container(
-                  width: 8,
-                  height: 8,
-                  decoration:
-                      BoxDecoration(color: p.accent, shape: BoxShape.circle)),
-              const SizedBox(width: 8),
-              const Text('أسعار اليوم',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-              const SizedBox(width: 8),
-              Expanded(child: Container(height: 1, color: p.line)),
-            ]),
-            const SizedBox(height: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                gradient: heroGradient,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: DefaultTextStyle(
-                style: const TextStyle(color: Colors.white),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(usd.name + (par ? ' – السوق الموازي' : ' – سعر البنك'),
-                          style: const TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 4),
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: SizedBox(
+            height: h,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+              child: Column(
+                children: [
+                  screenHeader(
+                    context,
+                    '\u0623\u0633\u0639\u0627\u0631 \u0627\u0644\u0639\u0645\u0644\u0627\u062A',
+                    Text(subText, style: TextStyle(fontSize: 12, color: p.muted)),
+                    action,
+                  ),
+                  const SizedBox(height: 10),
+                  SegmentedButton<RateType>(
+                    expandedInsets: EdgeInsets.zero,
+                    showSelectedIcon: true,
+                    segments: const [
+                      ButtonSegment(value: RateType.parallel, label: Text('\u0645\u0648\u0627\u0632\u064A')),
+                      ButtonSegment(value: RateType.bank, label: Text('\u0628\u0646\u0643')),
+                    ],
+                    selected: {type},
+                    onSelectionChanged: (s) => onType(s.first),
+                    style: SegmentedButton.styleFrom(
+                      backgroundColor: p.card,
+                      foregroundColor: p.muted,
+                      selectedBackgroundColor: p.mint,
+                      selectedForegroundColor: p.mintText,
+                      side: BorderSide(color: p.line),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(children: [
+                    Container(
+                        width: 8,
+                        height: 8,
+                        decoration:
+                            BoxDecoration(color: p.accent, shape: BoxShape.circle)),
+                    const SizedBox(width: 8),
+                    const Text('\u0623\u0633\u0639\u0627\u0631 \u0627\u0644\u064A\u0648\u0645',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                    const SizedBox(width: 8),
+                    Expanded(child: Container(height: 1, color: p.line)),
+                  ]),
+                  const SizedBox(height: 6),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      gradient: heroGradient,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: DefaultTextStyle(
+                      style: const TextStyle(color: Colors.white),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Text(usd.name + (par ? ' \u2013 \u0627\u0644\u0633\u0648\u0642 \u0627\u0644\u0645\u0648\u0627\u0632\u064A' : ' \u2013 \u0633\u0639\u0631 \u0627\u0644\u0628\u0646\u0643'),
+                                style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.3)),
+                            const SizedBox(height: 2),
                             Text.rich(
                               TextSpan(children: [
                                 TextSpan(
                                     text: fmt(usd.of(type)),
                                     style: const TextStyle(
-                                        fontSize: 44,
+                                        fontSize: 40,
                                         fontWeight: FontWeight.w700,
                                         height: 1.1)),
                                 const TextSpan(
-                                    text: ' ج.س',
-                                    style: TextStyle(fontSize: 12)),
+                                    text: ' \u062C.\u0633', style: TextStyle(fontSize: 12)),
                               ]),
                               textDirection: TextDirection.ltr,
                             ),
                           ]),
-                    ]),
-              ),
-            ),
-            const SizedBox(height: 10),
-            for (final r in list)
-              Padding(
-                padding: EdgeInsets.only(bottom: cp / 1.5),
-                child: Material(
-                  color: p.card,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    side: BorderSide(color: p.line),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(24),
-                    onTap: () => onPick(r.code),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: cp),
-                      child: Row(children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                              color: p.mint,
-                              borderRadius: BorderRadius.circular(12)),
-                          child: Text(_flags[r.code] ?? '',
-                              style: const TextStyle(fontSize: 22)),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(r.name,
-                                    style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
-                                        height: 1.25)),
-                                Text(r.code,
-                                    textDirection: TextDirection.ltr,
-                                    style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                        color: p.muted)),
-                              ]),
-                        ),
-                        const SizedBox(width: 6),
-                        priceTile(r),
-                      ]),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 10),
+
+                  Expanded(
+                    child: Column(
+                      children: [
+                        for (final r in list)
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: currencyCard(r),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-          ],
+            ),
+          ),
         ),
       );
     });
   }
 }
 
-// ───────────────────────── شاشة المحوّل ─────────────────────────
+
 
 String applyKey(String a, String k) {
-  if (k == '⌫') return a.isEmpty ? a : a.substring(0, a.length - 1);
+  if (k == '\u232B') return a.isEmpty ? a : a.substring(0, a.length - 1);
   if (k == '.') return a.contains('.') ? a : (a.isEmpty ? '0' : a) + '.';
   if (a.length >= 12) return a;
   return (a == '0' ? '' : a) + k;
@@ -663,7 +685,7 @@ class ConverterPage extends StatelessWidget {
       c == 'SDG' ? 1 : rates.firstWhere((r) => r.code == c).of(type);
 
   Map<String, String> get _names => {
-        'SDG': 'الجنيه السوداني',
+        'SDG': '\u0627\u0644\u062C\u0646\u064A\u0647 \u0627\u0644\u0633\u0648\u062F\u0627\u0646\u064A',
         for (final r in rates) r.code: r.name,
       };
 
@@ -700,10 +722,10 @@ class ConverterPage extends StatelessWidget {
     final p = Palette.of(context);
     final amt = double.tryParse(amount) ?? 0;
     final unit = _rate(from) / _rate(to);
-    final typeLabel = type == RateType.parallel ? 'سعر موازي' : 'سعر بنك';
+    final typeLabel = type == RateType.parallel ? '\u0633\u0639\u0631 \u0645\u0648\u0627\u0632\u064A' : '\u0633\u0639\u0631 \u0628\u0646\u0643';
 
     return LayoutBuilder(builder: (context, box) {
-      // ارتفاع المفاتيح يتكيّف مع طول الشاشة (بين 40 و60) بدل قصّ الأرقام
+
       final keyH = ((box.maxHeight - 450) / 4 - 6).clamp(40.0, 60.0).toDouble();
       final cellW = (box.maxWidth - 40 - 16) / 3;
       final ratio = cellW / keyH;
@@ -713,7 +735,7 @@ class ConverterPage extends StatelessWidget {
       children: [
         screenHeader(
           context,
-          'المحوّل',
+          '\u0627\u0644\u0645\u062D\u0648\u0651\u0644',
           TextButton(
             onPressed: onToggleType,
             style: TextButton.styleFrom(
@@ -722,7 +744,7 @@ class ConverterPage extends StatelessWidget {
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               alignment: Alignment.centerRight,
             ),
-            child: Text(typeLabel + ' · اضغط للتبديل',
+            child: Text(typeLabel + ' \u00B7 \u0627\u0636\u063A\u0637 \u0644\u0644\u062A\u0628\u062F\u064A\u0644',
                 style: TextStyle(
                     fontSize: 13, fontWeight: FontWeight.w600, color: p.mintText)),
           ),
@@ -739,7 +761,7 @@ class ConverterPage extends StatelessWidget {
           ),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text('من', style: TextStyle(fontSize: 13, color: p.muted)),
+              Text('\u0645\u0646', style: TextStyle(fontSize: 13, color: p.muted)),
               _picker(context, from, onFrom, bg: p.chip, fg: p.text),
             ]),
             Container(
@@ -753,7 +775,7 @@ class ConverterPage extends StatelessWidget {
         ),
         Center(
           child: IconButton.filled(
-            tooltip: 'تبديل العملتين',
+            tooltip: '\u062A\u0628\u062F\u064A\u0644 \u0627\u0644\u0639\u0645\u0644\u062A\u064A\u0646',
             onPressed: onSwap,
             style: IconButton.styleFrom(minimumSize: const Size(40, 40)),
             icon: const Icon(Icons.swap_vert),
@@ -768,7 +790,7 @@ class ConverterPage extends StatelessWidget {
           ),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              const Text('إلى', style: TextStyle(fontSize: 13, color: Colors.white)),
+              const Text('\u0625\u0644\u0649', style: TextStyle(fontSize: 13, color: Colors.white)),
               _picker(context, to, onTo,
                   bg: const Color(0x33FFFFFF), fg: Colors.white),
             ]),
@@ -799,7 +821,7 @@ class ConverterPage extends StatelessWidget {
             crossAxisSpacing: 8,
             childAspectRatio: ratio,
             children: [
-              for (final k in const ['1','2','3','4','5','6','7','8','9','.','0','⌫'])
+              for (final k in const ['1','2','3','4','5','6','7','8','9','.','0','\u232B'])
                 TextButton(
                   onPressed: () => onAmount(applyKey(amount, k)),
                   style: TextButton.styleFrom(

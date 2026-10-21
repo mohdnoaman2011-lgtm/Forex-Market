@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-/// شاشة البداية: الشعار بحركة ظهور ثم انتقال تلقائي للتطبيق.
+
 class SplashPage extends StatefulWidget {
   final Widget next;
   const SplashPage({super.key, required this.next});
