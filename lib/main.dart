@@ -119,62 +119,62 @@ String fmt(double v, [int d = 2]) {
 
 
 class Palette {
-  final Color bg, card, line, chip, text, muted, mint, mintText, cream, amber,
-      accent, onAccent;
+  final Color bg, surface, line, chip, text, muted, track, thumb, hero, accent,
+      onAccent, navBg, navText;
   const Palette({
     required this.bg,
-    required this.card,
+    required this.surface,
     required this.line,
     required this.chip,
     required this.text,
     required this.muted,
-    required this.mint,
-    required this.mintText,
-    required this.cream,
-    required this.amber,
+    required this.track,
+    required this.thumb,
+    required this.hero,
     required this.accent,
     required this.onAccent,
+    required this.navBg,
+    required this.navText,
   });
 
-  static const dark = Palette(
-    bg: Color(0xFF0A101C),
-    card: Color(0xFF121B2B),
-    line: Color(0xFF223148),
-    chip: Color(0xFF223148),
-    text: Color(0xFFE8EEF8),
-    muted: Color(0xFF8E9DB8),
-    mint: Color(0xFF182A4A),
-    mintText: Color(0xFF7AA5FF),
-    cream: Color(0xFF2B2514),
-    amber: Color(0xFFF2B544),
-    accent: Color(0xFF7AA5FF),
-    onAccent: Color(0xFF06122B),
+  static const light = Palette(
+    bg: Color(0xFFF1EFEA),
+    surface: Color(0xFFFFFFFF),
+    line: Color(0xFFE6E3DC),
+    chip: Color(0xFFF1EFEA),
+    text: Color(0xFF0F1115),
+    muted: Color(0xFF6B6F76),
+    track: Color(0xFFE6E3DC),
+    thumb: Color(0xFFFFFFFF),
+    hero: Color(0xFF0F1115),
+    accent: Color(0xFF2F5BFF),
+    onAccent: Color(0xFFFFFFFF),
+    navBg: Color(0xFF0F1115),
+    navText: Color(0xA6FFFFFF),
   );
 
-  static const light = Palette(
-    bg: Color(0xFFF4F6FA),
-    card: Color(0xFFFFFFFF),
-    line: Color(0xFFE1E6EF),
-    chip: Color(0xFFDFE6F2),
-    text: Color(0xFF121C2E),
-    muted: Color(0xFF56627A),
-    mint: Color(0xFFE8EFFC),
-    mintText: Color(0xFF1D4ED8),
-    cream: Color(0xFFFDF4E6),
-    amber: Color(0xFF9A5B00),
-    accent: Color(0xFF1D4ED8),
-    onAccent: Color(0xFFFFFFFF),
+  static const dark = Palette(
+    bg: Color(0xFF0B0C0F),
+    surface: Color(0xFF15171C),
+    line: Color(0xFF24272F),
+    chip: Color(0xFF1E2128),
+    text: Color(0xFFF2F3F5),
+    muted: Color(0xFF9AA0AA),
+    track: Color(0xFF1E2128),
+    thumb: Color(0xFF2B303B),
+    hero: Color(0xFF1B2350),
+    accent: Color(0xFF7D96FF),
+    onAccent: Color(0xFF0B1030),
+    navBg: Color(0xFF1E222B),
+    navText: Color(0x99FFFFFF),
   );
 
   static Palette of(BuildContext c) =>
       Theme.of(c).brightness == Brightness.dark ? dark : light;
 }
 
-const heroGradient = LinearGradient(
-  begin: Alignment.topRight,
-  end: Alignment.bottomLeft,
-  colors: [Color(0xFF2563EB), Color(0xFF1E3A8A)],
-);
+
+const softWhite = Color(0x24FFFFFF);
 
 ThemeData buildTheme(Brightness b) {
   final p = b == Brightness.dark ? Palette.dark : Palette.light;
@@ -182,14 +182,13 @@ ThemeData buildTheme(Brightness b) {
     useMaterial3: true,
     brightness: b,
     scaffoldBackgroundColor: p.bg,
-    cardColor: p.card,
+    cardColor: p.surface,
+    popupMenuTheme: PopupMenuThemeData(color: p.surface),
     colorScheme: ColorScheme.fromSeed(seedColor: p.accent, brightness: b).copyWith(
       primary: p.accent,
       onPrimary: p.onAccent,
       surface: p.bg,
       onSurface: p.text,
-      primaryContainer: p.chip,
-      onPrimaryContainer: p.text,
       onSurfaceVariant: p.muted,
       outlineVariant: p.line,
     ),
@@ -278,9 +277,9 @@ class _HomePageState extends State<HomePage> {
       tooltip: '\u062A\u0628\u062F\u064A\u0644 \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u062F\u0627\u0643\u0646 \u0648\u0627\u0644\u0641\u0627\u062A\u062D',
       onPressed: () => widget.onToggleTheme(isDark),
       style: IconButton.styleFrom(
-        backgroundColor: p.card,
+        backgroundColor: p.surface,
         foregroundColor: p.text,
-        minimumSize: const Size(44, 44),
+        minimumSize: const Size(46, 46),
         side: BorderSide(color: p.line),
       ),
       icon: Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
@@ -317,6 +316,7 @@ class _HomePageState extends State<HomePage> {
                       _to = 'SDG';
                       _tab = 1;
                     }),
+                    onConvert: () => setState(() => _tab = 1),
                     onRefresh: () async {
                       _reload();
                       await _future;
@@ -347,13 +347,13 @@ class _HomePageState extends State<HomePage> {
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(40, 8, 40, 16),
+          padding: const EdgeInsets.fromLTRB(48, 8, 48, 16),
           child: Container(
-            height: 64,
-            padding: const EdgeInsets.all(8),
+            height: 60,
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: p.card,
-              borderRadius: BorderRadius.circular(32),
+              color: p.navBg,
+              borderRadius: BorderRadius.circular(30),
               border: Border.all(color: p.line),
             ),
             child: Row(children: [
@@ -364,7 +364,7 @@ class _HomePageState extends State<HomePage> {
                     style: TextButton.styleFrom(
                       backgroundColor:
                           _tab == e.$1 ? p.accent : Colors.transparent,
-                      foregroundColor: _tab == e.$1 ? p.onAccent : p.muted,
+                      foregroundColor: _tab == e.$1 ? p.onAccent : p.navText,
                       shape: const StadiumBorder(),
                       textStyle: TextStyle(
                           fontWeight:
@@ -383,11 +383,11 @@ class _HomePageState extends State<HomePage> {
 
 
 
-Widget screenHeader(BuildContext context, String title, Widget sub, Widget action) {
+Widget screenHeader(Widget title, Widget sub, Widget action) {
   return Row(children: [
     Expanded(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(title, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
+        title,
         sub,
       ]),
     ),
@@ -395,41 +395,8 @@ Widget screenHeader(BuildContext context, String title, Widget sub, Widget actio
   ]);
 }
 
-Widget rateTile(BuildContext context,
-    {required String label,
-    required String value,
-    required IconData icon,
-    required Color bg,
-    required Color fg,
-    double width = 80,
-    double fontSize = 14}) {
-  return Container(
-    width: width,
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-    decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
-    child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            Icon(icon, size: 12, color: fg),
-            const SizedBox(width: 4),
-            Text(label, style: TextStyle(fontSize: 11, color: fg, height: 1.2)),
-          ]),
-          const SizedBox(height: 2),
-
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerRight,
-            child: Text(value,
-                textDirection: TextDirection.ltr,
-                softWrap: false,
-                style: TextStyle(
-                    fontSize: fontSize, fontWeight: FontWeight.w700, height: 1.15)),
-          ),
-        ]),
-  );
-}
+Widget screenTitle(String text) =>
+    Text(text, style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w700, height: 1.2));
 
 
 
@@ -439,6 +406,7 @@ class RatesPage extends StatelessWidget {
   final ValueChanged<RateType> onType;
   final Widget action;
   final ValueChanged<String> onPick;
+  final VoidCallback onConvert;
   final Future<void> Function() onRefresh;
   const RatesPage({
     super.key,
@@ -447,6 +415,7 @@ class RatesPage extends StatelessWidget {
     required this.onType,
     required this.action,
     required this.onPick,
+    required this.onConvert,
     required this.onRefresh,
   });
 
@@ -464,85 +433,273 @@ class RatesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = Palette.of(context);
     final par = type == RateType.parallel;
-
-    Widget priceTile(Rate r) => par
-        ? rateTile(context,
-            label: '\u0645\u0648\u0627\u0632\u064A',
-            value: fmt(r.parallel),
-            icon: Icons.storefront_outlined,
-            bg: p.cream,
-            fg: p.amber,
-            width: 120,
-            fontSize: 20)
-        : rateTile(context,
-            label: '\u0628\u0646\u0643',
-            value: fmt(r.bank),
-            icon: Icons.account_balance_outlined,
-            bg: p.mint,
-            fg: p.mintText,
-            width: 120,
-            fontSize: 20);
     final usd = data.rates.firstWhere((r) => r.code == 'USD',
         orElse: () => data.rates.first);
     final list = [
       for (final c in _order) ...data.rates.where((r) => r.code == c),
     ];
     final subText = data.updatedAgo != null
-        ? '\u0622\u062E\u0631 \u062A\u062D\u062F\u064A\u062B \u0645\u0646\u0630 ' + data.updatedAgo!
+        ? '\u0645\u062D\u062F\u0651\u062B \u0645\u0646\u0630 ' + data.updatedAgo!
         : '\u0645\u0642\u0627\u0628\u0644 \u0627\u0644\u062C\u0646\u064A\u0647 \u0627\u0644\u0633\u0648\u062F\u0627\u0646\u064A';
+
+
+    final double spread = par
+        ? (usd.bank == 0 ? 0.0 : (usd.parallel / usd.bank - 1) * 100)
+        : (usd.parallel == 0 ? 0.0 : (usd.bank / usd.parallel - 1) * 100);
+    final spreadText = (spread >= 0 ? '+' : '') + spread.toStringAsFixed(1) + '%';
+    final spreadLabel = par ? ' \u0639\u0646 \u0627\u0644\u0628\u0646\u0643' : ' \u0639\u0646 \u0627\u0644\u0645\u0648\u0627\u0632\u064A';
+
+    Widget segmented() => Container(
+          height: 44,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: p.track,
+            borderRadius: BorderRadius.circular(22),
+          ),
+          child: Row(children: [
+            for (final e in const [
+              (RateType.parallel, '\u0645\u0648\u0627\u0632\u064A'),
+              (RateType.bank, '\u0628\u0646\u0643'),
+            ])
+              Expanded(
+                child: Semantics(
+                  button: true,
+                  selected: type == e.$1,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => onType(e.$1),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: type == e.$1 ? p.thumb : Colors.transparent,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: type == e.$1
+                            ? const [
+                                BoxShadow(
+                                    color: Color(0x24000000),
+                                    blurRadius: 4,
+                                    offset: Offset(0, 1))
+                              ]
+                            : null,
+                      ),
+                      child: Text(e.$2,
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight:
+                                  type == e.$1 ? FontWeight.w700 : FontWeight.w500,
+                              color: type == e.$1 ? p.text : p.muted)),
+                    ),
+                  ),
+                ),
+              ),
+          ]),
+        );
+
+    Widget hero() => Container(
+          height: 156,
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: BoxDecoration(
+            color: p.hero,
+            borderRadius: BorderRadius.circular(32),
+          ),
+          child: DefaultTextStyle(
+            style: const TextStyle(color: Colors.white),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(children: [
+                      Text(_flags['USD'] ?? '',
+                          style: const TextStyle(fontSize: 28, height: 1.1)),
+                      const SizedBox(width: 10),
+                      Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(usd.name,
+                                style: const TextStyle(
+                                    fontSize: 15, fontWeight: FontWeight.w700)),
+                            Text(par ? '\u0627\u0644\u0633\u0648\u0642 \u0627\u0644\u0645\u0648\u0627\u0632\u064A' : '\u0633\u0639\u0631 \u0627\u0644\u0628\u0646\u0643',
+                                style: const TextStyle(
+                                    fontSize: 12, color: Colors.white70)),
+                          ]),
+                    ]),
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: softWhite,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Text('USD',
+                          textDirection: TextDirection.ltr,
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w700)),
+                    ),
+                  ],
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text.rich(
+                          TextSpan(children: [
+                            TextSpan(
+                                text: fmt(usd.of(type)),
+                                style: const TextStyle(
+                                    fontSize: 50,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.0)),
+                            const TextSpan(
+                                text: ' \u062C.\u0633', style: TextStyle(fontSize: 13)),
+                          ]),
+                          textDirection: TextDirection.ltr,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: softWhite,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Text(spreadText,
+                            textDirection: TextDirection.ltr,
+                            style: const TextStyle(fontSize: 12)),
+                        Text(spreadLabel, style: const TextStyle(fontSize: 12)),
+                      ]),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+
+    Widget tile(Rate r) {
+      final price = par ? r.parallel : r.bank;
+      return Material(
+        color: p.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+          side: BorderSide(color: p.line),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(28),
+          onTap: () => onPick(r.code),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(_flags[r.code] ?? '',
+                        style: const TextStyle(fontSize: 26, height: 1.1)),
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: p.chip,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(r.code,
+                          textDirection: TextDirection.ltr,
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: p.muted)),
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(r.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 13, color: p.muted, height: 1.2)),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Text(fmt(price),
+                          textDirection: TextDirection.ltr,
+                          softWrap: false,
+                          style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              height: 1.15)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    Widget actionTile() => Material(
+          color: p.accent,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(28),
+            onTap: onConvert,
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Icon(Icons.calculate_outlined, size: 26, color: p.onAccent),
+                      Icon(Icons.arrow_forward, size: 22, color: p.onAccent),
+                    ],
+                  ),
+                  Text('\u062D\u0648\u0651\u0644 \u0628\u064A\u0646 \u0627\u0644\u0639\u0645\u0644\u0627\u062A',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          height: 1.3,
+                          color: p.onAccent)),
+                ],
+              ),
+            ),
+          ),
+        );
+
+    final cells = <Widget>[for (final r in list) tile(r), actionTile()];
+    final gridRows = <Widget>[
+      for (var i = 0; i < cells.length; i += 2)
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: i + 2 < cells.length ? 10 : 0),
+            child: Row(children: [
+              Expanded(child: cells[i]),
+              const SizedBox(width: 10),
+              Expanded(
+                  child: i + 1 < cells.length ? cells[i + 1] : const SizedBox()),
+            ]),
+          ),
+        ),
+    ];
 
     return LayoutBuilder(builder: (context, box) {
 
-      final h = box.maxHeight < 600 ? 600.0 : box.maxHeight;
-
-      Widget currencyCard(Rate r) => Material(
-            color: p.card,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
-              side: BorderSide(color: p.line),
-            ),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(24),
-              onTap: () => onPick(r.code),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                        color: p.mint, borderRadius: BorderRadius.circular(12)),
-                    child: Text(_flags[r.code] ?? '',
-                        style: const TextStyle(fontSize: 22)),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(r.name,
-                              style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  height: 1.2)),
-                          Text(r.code,
-                              textDirection: TextDirection.ltr,
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  height: 1.2,
-                                  color: p.muted)),
-                        ]),
-                  ),
-                  const SizedBox(width: 6),
-                  priceTile(r),
-                ]),
-              ),
-            ),
-          );
-
+      final h = box.maxHeight < 660 ? 660.0 : box.maxHeight;
       return RefreshIndicator(
         onRefresh: onRefresh,
         child: SingleChildScrollView(
@@ -554,92 +711,25 @@ class RatesPage extends StatelessWidget {
               child: Column(
                 children: [
                   screenHeader(
-                    context,
-                    '\u0623\u0633\u0639\u0627\u0631 \u0627\u0644\u0639\u0645\u0644\u0627\u062A',
-                    Text(subText, style: TextStyle(fontSize: 12, color: p.muted)),
+                    screenTitle('\u0627\u0644\u0623\u0633\u0639\u0627\u0631'),
+                    Row(children: [
+                      Container(
+                          width: 7,
+                          height: 7,
+                          decoration: const BoxDecoration(
+                              color: Color(0xFF22C55E), shape: BoxShape.circle)),
+                      const SizedBox(width: 6),
+                      Text(subText,
+                          style: TextStyle(fontSize: 12, color: p.muted)),
+                    ]),
                     action,
                   ),
+                  const SizedBox(height: 12),
+                  segmented(),
+                  const SizedBox(height: 12),
+                  hero(),
                   const SizedBox(height: 10),
-                  SegmentedButton<RateType>(
-                    expandedInsets: EdgeInsets.zero,
-                    showSelectedIcon: true,
-                    segments: const [
-                      ButtonSegment(value: RateType.parallel, label: Text('\u0645\u0648\u0627\u0632\u064A')),
-                      ButtonSegment(value: RateType.bank, label: Text('\u0628\u0646\u0643')),
-                    ],
-                    selected: {type},
-                    onSelectionChanged: (s) => onType(s.first),
-                    style: SegmentedButton.styleFrom(
-                      backgroundColor: p.card,
-                      foregroundColor: p.muted,
-                      selectedBackgroundColor: p.mint,
-                      selectedForegroundColor: p.mintText,
-                      side: BorderSide(color: p.line),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(children: [
-                    Container(
-                        width: 8,
-                        height: 8,
-                        decoration:
-                            BoxDecoration(color: p.accent, shape: BoxShape.circle)),
-                    const SizedBox(width: 8),
-                    const Text('\u0623\u0633\u0639\u0627\u0631 \u0627\u0644\u064A\u0648\u0645',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-                    const SizedBox(width: 8),
-                    Expanded(child: Container(height: 1, color: p.line)),
-                  ]),
-                  const SizedBox(height: 6),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(
-                      gradient: heroGradient,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: DefaultTextStyle(
-                      style: const TextStyle(color: Colors.white),
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(usd.name + (par ? ' \u2013 \u0627\u0644\u0633\u0648\u0642 \u0627\u0644\u0645\u0648\u0627\u0632\u064A' : ' \u2013 \u0633\u0639\u0631 \u0627\u0644\u0628\u0646\u0643'),
-                                style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    height: 1.3)),
-                            const SizedBox(height: 2),
-                            Text.rich(
-                              TextSpan(children: [
-                                TextSpan(
-                                    text: fmt(usd.of(type)),
-                                    style: const TextStyle(
-                                        fontSize: 40,
-                                        fontWeight: FontWeight.w700,
-                                        height: 1.1)),
-                                const TextSpan(
-                                    text: ' \u062C.\u0633', style: TextStyle(fontSize: 12)),
-                              ]),
-                              textDirection: TextDirection.ltr,
-                            ),
-                          ]),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  Expanded(
-                    child: Column(
-                      children: [
-                        for (final r in list)
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 6),
-                              child: currencyCard(r),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
+                  Expanded(child: Column(children: gridRows)),
                 ],
               ),
             ),
@@ -689,159 +779,225 @@ class ConverterPage extends StatelessWidget {
         for (final r in rates) r.code: r.name,
       };
 
-  Widget _picker(BuildContext context, String value, ValueChanged<String> cb,
-      {required Color bg, required Color fg}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
-      child: DropdownButton<String>(
-        isDense: true,
-        value: value,
-        underline: const SizedBox.shrink(),
-        iconEnabledColor: fg,
-        selectedItemBuilder: (c) => [
-          for (final e in _names.entries)
-            Align(
-              alignment: Alignment.center,
-              child: Text(e.key,
-                  textDirection: TextDirection.ltr,
-                  style: TextStyle(color: fg, fontWeight: FontWeight.w600)),
-            ),
-        ],
-        items: [
-          for (final e in _names.entries)
-            DropdownMenuItem(value: e.key, child: Text(e.value + ' (' + e.key + ')')),
-        ],
-        onChanged: (v) => cb(v!),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final p = Palette.of(context);
     final amt = double.tryParse(amount) ?? 0;
     final unit = _rate(from) / _rate(to);
     final typeLabel = type == RateType.parallel ? '\u0633\u0639\u0631 \u0645\u0648\u0627\u0632\u064A' : '\u0633\u0639\u0631 \u0628\u0646\u0643';
+    final codes = _names.keys.toList();
 
     return LayoutBuilder(builder: (context, box) {
 
-      final keyH = ((box.maxHeight - 450) / 4 - 6).clamp(40.0, 60.0).toDouble();
+      final keyH = ((box.maxHeight - 430) / 4 - 6).clamp(40.0, 56.0).toDouble();
       final cellW = (box.maxWidth - 40 - 16) / 3;
       final ratio = cellW / keyH;
 
       return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-      children: [
-        screenHeader(
-          context,
-          '\u0627\u0644\u0645\u062D\u0648\u0651\u0644',
-          TextButton(
-            onPressed: onToggleType,
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              minimumSize: const Size(0, 32),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              alignment: Alignment.centerRight,
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+        children: [
+          screenHeader(
+            screenTitle('\u0627\u0644\u0645\u062D\u0648\u0651\u0644'),
+            TextButton(
+              onPressed: onToggleType,
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(0, 28),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                alignment: Alignment.centerRight,
+              ),
+              child: Text(typeLabel + ' \u00B7 \u0627\u0636\u063A\u0637 \u0644\u0644\u062A\u0628\u062F\u064A\u0644',
+                  style: TextStyle(
+                      fontSize: 12, fontWeight: FontWeight.w600, color: p.accent)),
             ),
-            child: Text(typeLabel + ' \u00B7 \u0627\u0636\u063A\u0637 \u0644\u0644\u062A\u0628\u062F\u064A\u0644',
-                style: TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.w600, color: p.mintText)),
+            action,
           ),
-          action,
-        ),
-        const SizedBox(height: 8),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          decoration: BoxDecoration(
-            color: p.card,
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: p.line),
-          ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text('\u0645\u0646', style: TextStyle(fontSize: 13, color: p.muted)),
-              _picker(context, from, onFrom, bg: p.chip, fg: p.text),
-            ]),
-            Container(
-              alignment: Alignment.centerLeft,
-              constraints: const BoxConstraints(minHeight: 50),
-              child: Text(amount.isEmpty ? '0' : amount,
-                  textDirection: TextDirection.ltr,
-                  style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w700)),
-            ),
-          ]),
-        ),
-        Center(
-          child: IconButton.filled(
-            tooltip: '\u062A\u0628\u062F\u064A\u0644 \u0627\u0644\u0639\u0645\u0644\u062A\u064A\u0646',
-            onPressed: onSwap,
-            style: IconButton.styleFrom(minimumSize: const Size(40, 40)),
-            icon: const Icon(Icons.swap_vert),
-          ),
-        ),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          decoration: BoxDecoration(
-            gradient: heroGradient,
-            borderRadius: BorderRadius.circular(28),
-          ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              const Text('\u0625\u0644\u0649', style: TextStyle(fontSize: 13, color: Colors.white)),
-              _picker(context, to, onTo,
-                  bg: const Color(0x33FFFFFF), fg: Colors.white),
-            ]),
-            Container(
-              alignment: Alignment.centerLeft,
-              constraints: const BoxConstraints(minHeight: 50),
-              child: Text(fmt(amt * unit),
-                  textDirection: TextDirection.ltr,
-                  style: const TextStyle(
-                      fontSize: 38, fontWeight: FontWeight.w700, color: Colors.white)),
-            ),
-          ]),
-        ),
-        const SizedBox(height: 8),
-        Center(
-          child: Text('1 $from = ${fmt(unit, 4)} $to',
-              textDirection: TextDirection.ltr,
-              style: TextStyle(color: p.muted, fontSize: 12)),
-        ),
-        const SizedBox(height: 8),
-        Directionality(
-          textDirection: TextDirection.ltr,
-          child: GridView.count(
-            crossAxisCount: 3,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: ratio,
-            children: [
-              for (final k in const ['1','2','3','4','5','6','7','8','9','.','0','\u232B'])
-                TextButton(
-                  onPressed: () => onAmount(applyKey(amount, k)),
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    backgroundColor: p.card,
-                    foregroundColor: p.text,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                      side: BorderSide(color: p.line),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 38,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(children: [
+                for (final c in codes)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(end: 8),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => onFrom(c),
+                      child: Container(
+                        height: 38,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: c == from ? p.text : p.surface,
+                          borderRadius: BorderRadius.circular(19),
+                          border: Border.all(
+                              color: c == from ? p.text : p.line),
+                        ),
+                        child: Text(c,
+                            textDirection: TextDirection.ltr,
+                            style: TextStyle(
+                                fontSize: 13,
+                                fontWeight:
+                                    c == from ? FontWeight.w700 : FontWeight.w500,
+                                color: c == from ? p.bg : p.muted)),
+                      ),
                     ),
-                    textStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
                   ),
-                  child: Text(k),
-                ),
-            ],
+              ]),
+            ),
           ),
-        ),
-      ],
-    );
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            decoration: BoxDecoration(
+              color: p.surface,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: p.line),
+            ),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('\u0627\u0644\u0645\u0628\u0644\u063A', style: TextStyle(fontSize: 12, color: p.muted)),
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(amount.isEmpty ? '0' : amount,
+                            style: const TextStyle(
+                                fontSize: 52,
+                                fontWeight: FontWeight.w700,
+                                height: 1.2)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(from,
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: p.muted)),
+                  ],
+                ),
+              ),
+            ]),
+          ),
+          SizedBox(
+            height: 36,
+            child: Center(
+              child: IconButton.filled(
+                tooltip: '\u062A\u0628\u062F\u064A\u0644 \u0627\u0644\u0639\u0645\u0644\u062A\u064A\u0646',
+                onPressed: onSwap,
+                style: IconButton.styleFrom(
+                  backgroundColor: p.accent,
+                  foregroundColor: p.onAccent,
+                  minimumSize: const Size(36, 36),
+                  padding: EdgeInsets.zero,
+                ),
+                icon: const Icon(Icons.swap_vert, size: 20),
+              ),
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            decoration: BoxDecoration(
+              color: p.hero,
+              borderRadius: BorderRadius.circular(28),
+            ),
+            child: DefaultTextStyle(
+              style: const TextStyle(color: Colors.white),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  const Text('\u0627\u0644\u0646\u062A\u064A\u062C\u0629',
+                      style: TextStyle(fontSize: 12, color: Colors.white70)),
+                  PopupMenuButton<String>(
+                    tooltip: '\u0627\u062E\u062A\u064A\u0627\u0631 \u0627\u0644\u0639\u0645\u0644\u0629',
+                    onSelected: onTo,
+                    itemBuilder: (c) => [
+                      for (final e in _names.entries)
+                        PopupMenuItem<String>(
+                          value: e.key,
+                          child: Text(e.value + ' (' + e.key + ')'),
+                        ),
+                    ],
+                    child: Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: softWhite,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Text(to,
+                            textDirection: TextDirection.ltr,
+                            style: const TextStyle(
+                                fontSize: 13, fontWeight: FontWeight.w700)),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.expand_more, size: 18, color: Colors.white),
+                      ]),
+                    ),
+                  ),
+                ]),
+                Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(fmt(amt * unit),
+                          style: const TextStyle(
+                              fontSize: 52,
+                              fontWeight: FontWeight.w700,
+                              height: 1.2)),
+                    ),
+                  ),
+                ),
+                Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: Text('1 $from = ${fmt(unit, 4)} $to',
+                      style: const TextStyle(fontSize: 12, color: Colors.white70)),
+                ),
+              ]),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: GridView.count(
+              crossAxisCount: 3,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              childAspectRatio: ratio,
+              children: [
+                for (final k in const ['1','2','3','4','5','6','7','8','9','.','0','\u232B'])
+                  TextButton(
+                    onPressed: () => onAmount(applyKey(amount, k)),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      backgroundColor: p.surface,
+                      foregroundColor: p.text,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(color: p.line),
+                      ),
+                      textStyle:
+                          const TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
+                    ),
+                    child: Text(k),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      );
     });
   }
 }
