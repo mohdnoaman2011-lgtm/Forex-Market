@@ -6,6 +6,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'splash_page.dart';
 
+
+const appVersion = 'v2.4';
+
 Future<void> main() async {
 
   ErrorWidget.builder = (details) => Material(
@@ -438,9 +441,11 @@ class RatesPage extends StatelessWidget {
     final list = [
       for (final c in _order) ...data.rates.where((r) => r.code == c),
     ];
-    final subText = data.updatedAgo != null
-        ? '\u0645\u062D\u062F\u0651\u062B \u0645\u0646\u0630 ' + data.updatedAgo!
-        : '\u0645\u0642\u0627\u0628\u0644 \u0627\u0644\u062C\u0646\u064A\u0647 \u0627\u0644\u0633\u0648\u062F\u0627\u0646\u064A';
+    final subText = (data.updatedAgo != null
+            ? '\u0645\u062D\u062F\u0651\u062B \u0645\u0646\u0630 ' + data.updatedAgo!
+            : '\u0645\u0642\u0627\u0628\u0644 \u0627\u0644\u062C\u0646\u064A\u0647 \u0627\u0644\u0633\u0648\u062F\u0627\u0646\u064A') +
+        ' \u00B7 ' +
+        appVersion;
 
 
     final double spread = par
