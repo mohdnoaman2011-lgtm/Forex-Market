@@ -279,7 +279,7 @@ class _HomePageState extends State<HomePage> {
       style: IconButton.styleFrom(
         backgroundColor: p.surface,
         foregroundColor: p.text,
-        minimumSize: const Size(46, 46),
+        minimumSize: const Size(42, 42),
         side: BorderSide(color: p.line),
       ),
       icon: Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
@@ -349,7 +349,7 @@ class _HomePageState extends State<HomePage> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(48, 8, 48, 16),
           child: Container(
-            height: 60,
+            height: 54,
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: p.navBg,
@@ -396,7 +396,7 @@ Widget screenHeader(Widget title, Widget sub, Widget action) {
 }
 
 Widget screenTitle(String text) =>
-    Text(text, style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w700, height: 1.2));
+    Text(text, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700, height: 1.2));
 
 
 
@@ -450,7 +450,7 @@ class RatesPage extends StatelessWidget {
     final spreadLabel = par ? ' \u0639\u0646 \u0627\u0644\u0628\u0646\u0643' : ' \u0639\u0646 \u0627\u0644\u0645\u0648\u0627\u0632\u064A';
 
     Widget segmented() => Container(
-          height: 44,
+          height: 40,
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
             color: p.track,
@@ -485,7 +485,7 @@ class RatesPage extends StatelessWidget {
                       ),
                       child: Text(e.$2,
                           style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 13,
                               fontWeight:
                                   type == e.$1 ? FontWeight.w700 : FontWeight.w500,
                               color: type == e.$1 ? p.text : p.muted)),
@@ -497,9 +497,9 @@ class RatesPage extends StatelessWidget {
         );
 
     Widget hero() => Container(
-          height: 156,
+          height: 136,
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
           decoration: BoxDecoration(
             color: p.hero,
             borderRadius: BorderRadius.circular(32),
@@ -514,14 +514,14 @@ class RatesPage extends StatelessWidget {
                   children: [
                     Row(children: [
                       Text(_flags['USD'] ?? '',
-                          style: const TextStyle(fontSize: 28, height: 1.1)),
+                          style: const TextStyle(fontSize: 24, height: 1.1)),
                       const SizedBox(width: 10),
                       Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(usd.name,
                                 style: const TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.w700)),
+                                    fontSize: 14, fontWeight: FontWeight.w700)),
                             Text(par ? '\u0627\u0644\u0633\u0648\u0642 \u0627\u0644\u0645\u0648\u0627\u0632\u064A' : '\u0633\u0639\u0631 \u0627\u0644\u0628\u0646\u0643',
                                 style: const TextStyle(
                                     fontSize: 12, color: Colors.white70)),
@@ -554,11 +554,11 @@ class RatesPage extends StatelessWidget {
                             TextSpan(
                                 text: fmt(usd.of(type)),
                                 style: const TextStyle(
-                                    fontSize: 50,
+                                    fontSize: 42,
                                     fontWeight: FontWeight.w700,
                                     height: 1.0)),
                             const TextSpan(
-                                text: ' \u062C.\u0633', style: TextStyle(fontSize: 13)),
+                                text: ' \u062C.\u0633', style: TextStyle(fontSize: 12)),
                           ]),
                           textDirection: TextDirection.ltr,
                         ),
@@ -575,8 +575,8 @@ class RatesPage extends StatelessWidget {
                       child: Row(mainAxisSize: MainAxisSize.min, children: [
                         Text(spreadText,
                             textDirection: TextDirection.ltr,
-                            style: const TextStyle(fontSize: 12)),
-                        Text(spreadLabel, style: const TextStyle(fontSize: 12)),
+                            style: const TextStyle(fontSize: 11)),
+                        Text(spreadLabel, style: const TextStyle(fontSize: 11)),
                       ]),
                     ),
                   ],
@@ -598,7 +598,7 @@ class RatesPage extends StatelessWidget {
           borderRadius: BorderRadius.circular(28),
           onTap: () => onPick(r.code),
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(12),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -607,7 +607,7 @@ class RatesPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(_flags[r.code] ?? '',
-                        style: const TextStyle(fontSize: 26, height: 1.1)),
+                        style: const TextStyle(fontSize: 22, height: 1.1)),
                     Container(
                       padding:
                           const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -618,7 +618,7 @@ class RatesPage extends StatelessWidget {
                       child: Text(r.code,
                           textDirection: TextDirection.ltr,
                           style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 10,
                               fontWeight: FontWeight.w700,
                               color: p.muted)),
                     ),
@@ -630,7 +630,7 @@ class RatesPage extends StatelessWidget {
                     Text(r.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 13, color: p.muted, height: 1.2)),
+                        style: TextStyle(fontSize: 12, color: p.muted, height: 1.2)),
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerRight,
@@ -638,7 +638,7 @@ class RatesPage extends StatelessWidget {
                           textDirection: TextDirection.ltr,
                           softWrap: false,
                           style: const TextStyle(
-                              fontSize: 24,
+                              fontSize: 20,
                               fontWeight: FontWeight.w700,
                               height: 1.15)),
                     ),
@@ -658,7 +658,7 @@ class RatesPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(28),
             onTap: onConvert,
             child: Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -666,13 +666,13 @@ class RatesPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Icon(Icons.calculate_outlined, size: 26, color: p.onAccent),
-                      Icon(Icons.arrow_forward, size: 22, color: p.onAccent),
+                      Icon(Icons.calculate_outlined, size: 22, color: p.onAccent),
+                      Icon(Icons.arrow_forward, size: 20, color: p.onAccent),
                     ],
                   ),
                   Text('\u062D\u0648\u0651\u0644 \u0628\u064A\u0646 \u0627\u0644\u0639\u0645\u0644\u0627\u062A',
                       style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
                           height: 1.3,
                           color: p.onAccent)),
@@ -700,7 +700,7 @@ class RatesPage extends StatelessWidget {
 
     return LayoutBuilder(builder: (context, box) {
 
-      final h = box.maxHeight < 660 ? 660.0 : box.maxHeight;
+      final h = box.maxHeight < 600 ? 600.0 : box.maxHeight;
       return RefreshIndicator(
         onRefresh: onRefresh,
         child: SingleChildScrollView(
@@ -790,7 +790,7 @@ class ConverterPage extends StatelessWidget {
 
     return LayoutBuilder(builder: (context, box) {
 
-      final keyH = ((box.maxHeight - 430) / 4 - 6).clamp(40.0, 56.0).toDouble();
+      final keyH = ((box.maxHeight - 400) / 4 - 6).clamp(40.0, 50.0).toDouble();
       final cellW = (box.maxWidth - 40 - 16) / 3;
       final ratio = cellW / keyH;
 
@@ -815,7 +815,7 @@ class ConverterPage extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           SizedBox(
-            height: 38,
+            height: 32,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(children: [
@@ -826,7 +826,7 @@ class ConverterPage extends StatelessWidget {
                       behavior: HitTestBehavior.opaque,
                       onTap: () => onFrom(c),
                       child: Container(
-                        height: 38,
+                        height: 32,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
@@ -851,7 +851,7 @@ class ConverterPage extends StatelessWidget {
           const SizedBox(height: 12),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
               color: p.surface,
               borderRadius: BorderRadius.circular(28),
@@ -870,7 +870,7 @@ class ConverterPage extends StatelessWidget {
                         alignment: Alignment.centerLeft,
                         child: Text(amount.isEmpty ? '0' : amount,
                             style: const TextStyle(
-                                fontSize: 52,
+                                fontSize: 40,
                                 fontWeight: FontWeight.w700,
                                 height: 1.2)),
                       ),
@@ -904,7 +904,7 @@ class ConverterPage extends StatelessWidget {
           ),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
               color: p.hero,
               borderRadius: BorderRadius.circular(28),
@@ -952,7 +952,7 @@ class ConverterPage extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: Text(fmt(amt * unit),
                           style: const TextStyle(
-                              fontSize: 52,
+                              fontSize: 40,
                               fontWeight: FontWeight.w700,
                               height: 1.2)),
                     ),
@@ -994,7 +994,7 @@ class ConverterPage extends StatelessWidget {
                         side: BorderSide(color: p.line),
                       ),
                       textStyle:
-                          const TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
+                          const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                     ),
                     child: Text(k),
                   ),
