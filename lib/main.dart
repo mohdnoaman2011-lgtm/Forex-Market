@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import 'splash_page.dart';
 
 
-const appVersion = 'v2.5';
+const appVersion = 'v2.6';
 
 Future<void> main() async {
 
@@ -688,24 +688,26 @@ class RatesPage extends StatelessWidget {
         );
 
     final cells = <Widget>[for (final r in list) tile(r), actionTile()];
-    final gridRows = <Widget>[
-      for (var i = 0; i < cells.length; i += 2)
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(bottom: i + 2 < cells.length ? 10 : 0),
-            child: Row(children: [
-              Expanded(child: cells[i]),
-              const SizedBox(width: 10),
-              Expanded(
-                  child: i + 1 < cells.length ? cells[i + 1] : const SizedBox()),
-            ]),
-          ),
-        ),
-    ];
 
     return LayoutBuilder(builder: (context, box) {
-
       final h = box.maxHeight < 600 ? 600.0 : box.maxHeight;
+
+      final tileH = ((h - 16 - 204 - 50) / 3).clamp(96.0, 116.0).toDouble();
+      final gridRows = <Widget>[
+        for (var i = 0; i < cells.length; i += 2)
+          Padding(
+            padding: EdgeInsets.only(top: i == 0 ? 0 : 10),
+            child: SizedBox(
+              height: tileH,
+              child: Row(children: [
+                Expanded(child: cells[i]),
+                const SizedBox(width: 10),
+                Expanded(
+                    child: i + 1 < cells.length ? cells[i + 1] : const SizedBox()),
+              ]),
+            ),
+          ),
+      ];
       return RefreshIndicator(
         onRefresh: onRefresh,
         child: SingleChildScrollView(
@@ -715,6 +717,7 @@ class RatesPage extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   screenHeader(
                     screenTitle('\u0627\u0644\u0623\u0633\u0639\u0627\u0631'),
@@ -730,12 +733,9 @@ class RatesPage extends StatelessWidget {
                     ]),
                     action,
                   ),
-                  const SizedBox(height: 12),
                   segmented(),
-                  const SizedBox(height: 12),
                   hero(),
-                  const SizedBox(height: 10),
-                  Expanded(child: Column(children: gridRows)),
+                  Column(children: gridRows),
                 ],
               ),
             ),
@@ -793,8 +793,6 @@ class ConverterPage extends StatelessWidget {
     final typeLabel = type == RateType.parallel ? '\u0633\u0639\u0631 \u0645\u0648\u0627\u0632\u064A' : '\u0633\u0639\u0631 \u0628\u0646\u0643';
     final codes = _names.keys.toList();
 
-
-    const keyH = 50.0;
     const keysList = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '\u232B'];
 
     Widget keyButton(String k) => TextButton(
@@ -813,15 +811,15 @@ class ConverterPage extends StatelessWidget {
           child: Text(k),
         );
 
-    Widget keypad() => Directionality(
+    Widget keypad(double rowH) => Directionality(
           textDirection: TextDirection.ltr,
           child: Column(children: [
             for (var r = 0; r < 4; r++)
               Padding(
                 padding: EdgeInsets.only(bottom: r < 3 ? 8 : 0),
                 child: SizedBox(
-                  height: keyH,
-                  child: Row(children: [
+                  height: rowH,
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                     for (var c = 0; c < 3; c++) ...[
                       if (c > 0) const SizedBox(width: 8),
                       Expanded(child: keyButton(keysList[r * 3 + c])),
@@ -973,7 +971,10 @@ class ConverterPage extends StatelessWidget {
         );
 
     return LayoutBuilder(builder: (context, box) {
-      final h = box.maxHeight < 640 ? 640.0 : box.maxHeight;
+      final h = box.maxHeight < 600 ? 600.0 : box.maxHeight;
+
+      final rowH =
+          ((h - 20 - 46 - 32 - 216 - 36 - 24) / 4).clamp(44.0, 60.0).toDouble();
       return SingleChildScrollView(
         child: SizedBox(
           height: h,
@@ -982,28 +983,25 @@ class ConverterPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(children: [
-                  screenHeader(
-                    screenTitle('\u0627\u0644\u0645\u062D\u0648\u0651\u0644'),
-                    TextButton(
-                      onPressed: onToggleType,
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: const Size(0, 28),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        alignment: Alignment.centerRight,
-                      ),
-                      child: Text(typeLabel + ' \u00B7 \u0627\u0636\u063A\u0637 \u0644\u0644\u062A\u0628\u062F\u064A\u0644',
-                          style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: p.accent)),
+                screenHeader(
+                  screenTitle('\u0627\u0644\u0645\u062D\u0648\u0651\u0644'),
+                  TextButton(
+                    onPressed: onToggleType,
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(0, 28),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      alignment: Alignment.centerRight,
                     ),
-                    action,
+                    child: Text(typeLabel + ' \u00B7 \u0627\u0636\u063A\u0637 \u0644\u0644\u062A\u0628\u062F\u064A\u0644',
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: p.accent)),
                   ),
-                  const SizedBox(height: 10),
-                  chipsRow(),
-                ]),
+                  action,
+                ),
+                chipsRow(),
                 Column(children: [
                   amountCard(),
                   SizedBox(
@@ -1024,7 +1022,7 @@ class ConverterPage extends StatelessWidget {
                   ),
                   resultCard(),
                 ]),
-                keypad(),
+                keypad(rowH),
               ],
             ),
           ),
