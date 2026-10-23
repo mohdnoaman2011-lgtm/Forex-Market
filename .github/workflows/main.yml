@@ -19,22 +19,36 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: "3.47.7"
           cache: true
 
-      - name: Generate android folder if missing
+      - name: Create Android project files
         run: |
-          if [ ! -d android ]; then
-            flutter create --org sd.rates --project-name sudan_rates .
-          fi
+          flutter create --platforms=android --project-name currency_app --org com.example .
+          rm -rf test analysis_options.yaml
 
-      - name: Android setup (permissions + desugaring)
-        run: python3 tool/android_setup.py
+      - name: Add INTERNET permission and app name
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          grep -q 'android.permission.INTERNET' $M || \
+          sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' $M
+          sed -i 's#android:label="[^"]*"#android:label="Forex-Market"#' $M
+
+      - name: Disable Impeller
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          sed -i 's#</application>#    <meta-data android:name="io.flutter.embedding.android.EnableImpeller" android:value="false"/>\n    </application>#' $M
 
       - run: flutter pub get
+
+      - name: Generate launcher icons
+        run: dart run flutter_launcher_icons
+
+      - run: flutter analyze --no-fatal-infos
 
       - run: flutter build apk --release
 
       - uses: actions/upload-artifact@v4
         with:
-          name: sudan-rates-apk
+          name: currency-app-apk
           path: build/app/outputs/flutter-apk/app-release.apk
